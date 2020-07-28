@@ -1,7 +1,9 @@
 package vtungusov;
 
 import vtungusov.parser.FileParser;
-import vtungusov.report.Report;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
@@ -9,9 +11,17 @@ public class Main {
             String inputFileName = args[0];
             String outputFileName = args[1];
             FileParser fileParser = new FileParser(inputFileName);
-            Report symbolFrequencyReport = fileParser.getSymbolFrequencyReport();
 
-            symbolFrequencyReport.printToFile(outputFileName);
+            try {
+                fileParser
+                        .getSymbolFrequencyReport()
+                        .printToFile(outputFileName);
+            } catch (FileNotFoundException e) {
+                System.out.println("Input file not found");
+            } catch (IOException e) {
+                System.out.println("File reading error");
+            }
+
         } else
             System.out.println("Provide input and output file names in arguments (first - input, second - output)");
     }

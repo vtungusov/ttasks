@@ -1,11 +1,9 @@
 package vtungusov.parser;
 
-import vtungusov.exception.ReportException;
 import vtungusov.report.FrequencyReport;
 import vtungusov.report.Report;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
@@ -19,19 +17,13 @@ public class FileParser implements Parser {
     }
 
     @Override
-    public Report getSymbolFrequencyReport() {
+    public Report getSymbolFrequencyReport() throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             Map<String, Integer> map = getCharFrequency(reader);
             Map<String, String> histogram = formHistogram(map);
 
             List<String> report = getReportList(map, histogram);
             return new FrequencyReport(report);
-        } catch (FileNotFoundException e) {
-            System.out.println("Input file not found");
-            throw new ReportException();
-        } catch (IOException e) {
-            System.out.println("File reading error");
-            throw new ReportException();
         }
     }
 
