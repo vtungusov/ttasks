@@ -1,5 +1,7 @@
 package vtungusov.report;
 
+import java.io.IOException;
+
 public interface Report {
-    void printToConsole();
+    void printToFile(String fileName);
 }

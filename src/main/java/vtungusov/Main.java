@@ -1,32 +1,18 @@
 package vtungusov;
 
 import vtungusov.parser.FileParser;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import vtungusov.report.Report;
 
 public class Main {
     public static void main(String[] args) {
-        String fileName;
-        fileName = readFileName();
-        FileParser fileParser = new FileParser(new File(fileName));
-        try {
-            fileParser.getSymbolFrequencyReport().printToConsole();
-        } catch (IOException e) {
-            System.out.println("File reading error");
-        }
-    }
+        if (args.length > 1 && args[0] != null && args[1] != null) {
+            String inputFileName = args[0];
+            String outputFileName = args[1];
+            FileParser fileParser = new FileParser(inputFileName);
+            Report symbolFrequencyReport = fileParser.getSymbolFrequencyReport();
 
-    private static String readFileName() {
-        String fileName = null;
-        System.out.println("Enter file name:");
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-            fileName = reader.readLine();
-        } catch (IOException e) {
-            System.out.println("Error during read file name");
-        }
-        return fileName;
+            symbolFrequencyReport.printToFile(outputFileName);
+        } else
+            System.out.println("Provide input and output file names in arguments (first - input, second - output)");
     }
 }
