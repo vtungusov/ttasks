@@ -3,21 +3,19 @@ package vtungusov.parser;
 import vtungusov.report.FrequencyReport;
 import vtungusov.report.Report;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class FileParser implements Parser {
     private static final int HISTOGRAM_SECTION_SIZE = 5;
-    private final String fileName;
+    private final Stream<String> stringStream;
 
-    public FileParser(String fileName) {
-        this.fileName = fileName;
+    public FileParser(Stream<String> fileInputStream) {
+        this.stringStream = fileInputStream;
     }
 
     @Override
-    public Report getSymbolFrequencyReport() throws IOException {
+    public Report getSymbolFrequencyReport() {
         Map<String, Integer> frequency = getCharFrequency();
         List<String> report = getReportList(frequency);
         return new FrequencyReport(report);
@@ -58,9 +56,9 @@ public class FileParser implements Parser {
         return sb.toString();
     }
 
-    private Map<String, Integer> getCharFrequency() throws IOException {
+    private Map<String, Integer> getCharFrequency() {
         Map<String, Integer> frequency = new HashMap<>();
-        Files.lines(Paths.get(fileName))
+        stringStream
                 .map(String::toCharArray)
                 .forEach(m -> {
                     for (char c : m) {
