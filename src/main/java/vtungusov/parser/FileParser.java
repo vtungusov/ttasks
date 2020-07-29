@@ -65,7 +65,7 @@ public class FileParser implements Parser {
                 .forEach(m -> {
                     for (char c : m) {
                         if (!Character.isSpaceChar(c)) {
-                            frequency.put(String.valueOf(c), frequency.getOrDefault(String.valueOf(c), 1) + 1);
+                            frequency.compute(String.valueOf(c), (k, v) -> (v == null) ? 1 : v + 1);
                         }
                     }
                 });
