@@ -3,9 +3,9 @@ package vtungusov.parser;
 import vtungusov.report.FrequencyReport;
 import vtungusov.report.Report;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class FileParser implements Parser {
@@ -18,61 +18,57 @@ public class FileParser implements Parser {
 
     @Override
     public Report getSymbolFrequencyReport() throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
-            Map<String, Integer> map = getCharFrequency(reader);
-            Map<String, String> histogram = formHistogram(map);
-
-            List<String> report = getReportList(map, histogram);
-            return new FrequencyReport(report);
-        }
+        Map<String, Integer> frequency = getCharFrequency();
+        List<String> report = getReportList(frequency);
+        return new FrequencyReport(report);
     }
 
-    private List<String> getReportList(Map<String, Integer> map, Map<String, String> histogram) {
-        int totalAmount = map.values().stream()
+    private List<String> getReportList(Map<String, Integer> frequencyMap) {
+        int totalAmount = frequencyMap.values().stream()
                 .mapToInt(Integer::intValue).sum();
 
         List<String> report = new ArrayList<>();
-        histogram.entrySet()
+        int histVertex = Collections.max(frequencyMap.values());
+        int histStep = histVertex / HISTOGRAM_SECTION_SIZE;
+
+        frequencyMap.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .forEach(x -> {
-                            float percent = map.get(x.getKey()) * 100 / (float) totalAmount;
-                            report.add(String.format("%s (%5.2f): %s \n", x.getKey(), percent, x.getValue()));
+                            float percent = frequencyMap.get(x.getKey()) * 100 / (float) totalAmount;
+                            String histogram = getHistogram(histStep, x);
+                            report.add(String.format("%s (%5.2f): %s", x.getKey(), percent, histogram));
                         }
                 );
         return report;
     }
 
-    private Map<String, String> formHistogram(Map<String, Integer> map) {
-        int histVertex = Collections.max(map.values());
-        int histStep = histVertex / HISTOGRAM_SECTION_SIZE;
+    private String getHistogram(int histStep, Map.Entry<String, Integer> mapEntry) {
+        int stepCount;
+        if (histStep != 0) {
+            stepCount = mapEntry.getValue() / histStep;
+        } else {
+            stepCount = 0;
+        }
 
-        Map<String, String> histogram = new HashMap<>();
-        map.forEach((key, value) -> {
-            StringBuilder sb = new StringBuilder();
-            int stepCount;
-            if (histStep != 0) {
-                stepCount = value / histStep;
-            } else stepCount = 0;
-
-            for (int i = 0; i < stepCount; i++) {
-                sb.append('#');
-            }
-            histogram.put(key, sb.toString());
-        });
-        return histogram;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < stepCount; i++) {
+            sb.append('#');
+        }
+        return sb.toString();
     }
 
-    private Map<String, Integer> getCharFrequency(BufferedReader reader) throws IOException {
-        Map<String, Integer> map = new HashMap<>();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            String charI;
-            for (int i = 0; i < line.length(); i++) {
-                charI = line.substring(i, i + 1);
-                map.put(charI, map.getOrDefault(charI, 1) + 1);
-            }
-        }
-        return map;
+    private Map<String, Integer> getCharFrequency() throws IOException {
+        Map<String, Integer> frequency = new HashMap<>();
+        Files.lines(Paths.get(fileName))
+                .map(String::toCharArray)
+                .forEach(m -> {
+                    for (char c : m) {
+                        if (!Character.isSpaceChar(c)) {
+                            frequency.put(String.valueOf(c), frequency.getOrDefault(String.valueOf(c), 1) + 1);
+                        }
+                    }
+                });
+        return frequency;
     }
 }
