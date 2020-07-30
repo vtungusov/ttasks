@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class FileParser implements Parser {
-    private static final int HISTOGRAM_SECTION_SIZE = 5;
+    private static final int HISTOGRAM_SECTION_SIZE = 100;
     private static final String REPORT_TEMPLATE = "%s (%5.2f): %s";
     private final Stream<String> stringStream;
 
@@ -59,6 +59,9 @@ public class FileParser implements Parser {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < stepCount; i++) {
             sb.append('#');
+        }
+        if (sb.length() < 1) {
+            sb.append("#");
         }
         return sb.toString();
     }
