@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 public class FileParser implements Parser {
     private static final int HISTOGRAM_SECTION_SIZE = 5;
+    private static final String REPORT_TEMPLATE = "%s (%5.2f): %s";
     private final Stream<String> stringStream;
 
     public FileParser(Stream<String> fileInputStream) {
@@ -35,7 +36,7 @@ public class FileParser implements Parser {
                 .forEach(x -> {
                             float percent = frequencyMap.get(x.getKey()) * 100 / (float) totalAmount;
                             String histogram = getHistogram(histStep, x);
-                            report.add(String.format("%s (%5.2f): %s", x.getKey(), percent, histogram));
+                            report.add(String.format(REPORT_TEMPLATE, x.getKey(), percent, histogram));
                         }
                 );
         return report;
