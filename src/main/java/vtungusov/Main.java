@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static vtungusov.parser.FileParser.checkInputFile;
+import static vtungusov.parser.FileParser.checkOutputFile;
+
 public class Main {
     private static final String SUCCESSFULLY_FINISHED = "Program successfully finished\nYou can look report\n-----------------------------";
 
@@ -21,8 +24,16 @@ public class Main {
             String lineCount = handleArguments[2];
 
             try {
-                Report symbolFrequencyReport = new FileParser(Files.lines(Paths.get(inputFileName)))
-                        .getSymbolFrequencyReport();
+                checkInputFile(inputFileName);
+                checkOutputFile(outputFileName);
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+                return;
+            }
+
+            try {
+                Report symbolFrequencyReport = new FileParser()
+                        .getSymbolFrequencyReport(Files.lines(Paths.get(inputFileName)));
                 if (lineCount == null) {
                     symbolFrequencyReport.printToFile(outputFileName);
                 } else {
@@ -30,7 +41,7 @@ public class Main {
                 }
                 System.out.println(SUCCESSFULLY_FINISHED);
             } catch (IOException e) {
-                System.out.println("File reading error");
+                System.out.println("Something wrong, File reading error");
             }
         }
     }

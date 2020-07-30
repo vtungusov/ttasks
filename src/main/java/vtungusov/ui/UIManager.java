@@ -44,8 +44,7 @@ public class UIManager {
                 } else {
                     options[2] = String.valueOf(cmd.getParsedOptionValue("t"));
                 }
-            } catch (ParseException e) {
-                e.printStackTrace();
+            } catch (ParseException ignore) {
             }
         }
         return options;
