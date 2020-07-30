@@ -38,9 +38,9 @@ public class FileParser implements Parser {
                 .forEach(x -> {
                             BigDecimal percent = BigDecimal.valueOf(frequencyMap.get(x.getKey()))
                                     .multiply(BigDecimal.valueOf(100))
-                                    .divide(BigDecimal.valueOf(totalAmount), RoundingMode.HALF_EVEN);
+                                    .divide(BigDecimal.valueOf(totalAmount), 2, RoundingMode.HALF_EVEN);
                             String histogram = getHistogram(histStep, x);
-                            report.add(String.format(REPORT_TEMPLATE, x.getKey(), percent, histogram));
+                            report.add(String.format(REPORT_TEMPLATE, x.getKey(), percent.floatValue(), histogram));
                         }
                 );
         return report;

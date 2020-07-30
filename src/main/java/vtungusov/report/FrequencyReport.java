@@ -14,8 +14,12 @@ public class FrequencyReport implements Report {
 
     @Override
     public void printToFile(String fileName) {
+        printTopToFile(fileName, report.size());
+    }
+
+    public void printTopToFile(String fileName, int topCount) {
         try {
-            Files.write(Paths.get(fileName), report);
+            Files.write(Paths.get(fileName), report.subList(0, topCount));
         } catch (IOException e) {
             System.out.println("Error during report creation");
         }
