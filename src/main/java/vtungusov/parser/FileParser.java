@@ -3,6 +3,8 @@ package vtungusov.parser;
 import vtungusov.report.FrequencyReport;
 import vtungusov.report.Report;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -34,7 +36,9 @@ public class FileParser implements Parser {
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .forEach(x -> {
-                            float percent = frequencyMap.get(x.getKey()) * 100 / (float) totalAmount;
+                            BigDecimal percent = BigDecimal.valueOf(frequencyMap.get(x.getKey()))
+                                    .multiply(BigDecimal.valueOf(100))
+                                    .divide(BigDecimal.valueOf(totalAmount), RoundingMode.HALF_EVEN);
                             String histogram = getHistogram(histStep, x);
                             report.add(String.format(REPORT_TEMPLATE, x.getKey(), percent, histogram));
                         }
