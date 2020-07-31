@@ -61,19 +61,28 @@ public class StreamParser implements Parser<Stream<String>> {
         for (int i = 0; i < stepCount; i++) {
             sb.append('#');
         }
+
+        addGraphToRareSymbol(sb);
+        return sb.toString();
+    }
+
+    private void addGraphToRareSymbol(StringBuilder sb) {
         if (sb.length() < 1) {
             sb.append("#");
         }
-        return sb.toString();
     }
 
     private Map<Character, Integer> getCharFrequency(Stream<String> stringStream) {
         Map<Character, Integer> frequency = new HashMap<>();
         stringStream
-                .forEach(line -> line.chars()
-                        .filter(i -> (!Character.isSpaceChar(i)))
-                        .forEach(charI -> frequency.compute((char) charI, (k, v) -> (v == null) ? 1 : v + 1)));
-        this.totalSymbols = frequency.values().stream().mapToInt(Integer::intValue).sum();
+                .flatMapToInt(CharSequence::chars)
+                .filter(i -> (!Character.isSpaceChar(i)))
+                .forEach(charI -> frequency.compute((char) charI, (k, v) -> (v == null) ? 1 : v + 1));
+
+        this.totalSymbols = frequency.values().stream()
+                .mapToInt(Integer::intValue)
+                .sum();
+
         return frequency;
     }
 
@@ -82,6 +91,8 @@ public class StreamParser implements Parser<Stream<String>> {
         return charFrequency.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .limit(lineCount).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .limit(lineCount)
+                .collect(Collectors
+                        .toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }
