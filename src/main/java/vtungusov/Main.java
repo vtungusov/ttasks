@@ -1,6 +1,6 @@
 package vtungusov;
 
-import vtungusov.parser.FileParser;
+import vtungusov.parser.StreamParser;
 import vtungusov.ui.UIManager;
 
 import java.io.IOException;
@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-import static vtungusov.parser.FileParser.checkInputFile;
-import static vtungusov.parser.FileParser.checkOutputFile;
+import static vtungusov.util.FileUtil.checkInputFile;
+import static vtungusov.util.FileUtil.checkOutputFile;
 
 public class Main {
     private static final String SUCCESSFULLY_FINISHED = "Program successfully finished\nYou can look report\n-----------------------------";
@@ -32,15 +32,15 @@ public class Main {
             }
 
             try {
-                FileParser fileParser = new FileParser();
+                StreamParser streamParser = new StreamParser();
                 Stream<String> stringStream = Files.lines(Paths.get(inputFileName));
 
                 if (lineCount == null) {
-                    fileParser
+                    streamParser
                             .getSymbolFrequencyReport(stringStream)
                             .printToFile(outputFileName);
                 } else {
-                    fileParser
+                    streamParser
                             .getSymbolFrequencyReport(stringStream, Integer.parseInt(lineCount))
                             .printToFile(outputFileName);
                 }

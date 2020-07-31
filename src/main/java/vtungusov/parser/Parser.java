@@ -2,11 +2,9 @@ package vtungusov.parser;
 
 import vtungusov.report.Report;
 
-import java.util.stream.Stream;
+public interface Parser<T> {
 
-public interface Parser {
+    Report getSymbolFrequencyReport(T t);
 
-    Report getSymbolFrequencyReport(Stream<String> stringStream);
-
-    Report getSymbolFrequencyReport(Stream<String> stringStream, int lineCount);
+    Report getSymbolFrequencyReport(T t, int lineCount);
 }
