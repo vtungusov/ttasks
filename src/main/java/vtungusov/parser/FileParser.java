@@ -69,17 +69,9 @@ public class FileParser implements Parser {
     private Map<String, Integer> getCharFrequency(Stream<String> stringStream) {
         Map<String, Integer> frequency = new HashMap<>();
         stringStream
-                .map(String::toCharArray)
-                .forEach(arr -> setFrequency(frequency, arr));
+                .forEach(line -> line.chars()
+                        .forEach(charI -> frequency.compute(String.valueOf((char) charI), (k, v) -> (v == null) ? 1 : v + 1)));
         return frequency;
-    }
-
-    private void setFrequency(Map<String, Integer> frequency, char[] array) {
-        for (char chaI : array) {
-            if (!Character.isSpaceChar(chaI)) {
-                frequency.compute(String.valueOf(chaI), (k, v) -> (v == null) ? 1 : v + 1);
-            }
-        }
     }
 
     public static void checkInputFile(String inputFileName) throws IOException {
