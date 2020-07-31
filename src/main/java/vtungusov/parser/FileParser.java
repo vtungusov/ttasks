@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FileParser implements Parser {
@@ -24,13 +25,20 @@ public class FileParser implements Parser {
         return new FrequencyReport(report);
     }
 
+    @Override
+    public Report getSymbolFrequencyReport(Stream<String> stringStream, int lineCount) {
+        Map<String, Integer> frequency = getCharFrequency(stringStream, lineCount);
+        List<String> report = getReportList(frequency);
+        return new FrequencyReport(report);
+    }
+
     private List<String> getReportList(Map<String, Integer> frequencyMap) {
         int totalAmount = frequencyMap.values().stream()
                 .mapToInt(Integer::intValue).sum();
 
         List<String> report = new ArrayList<>();
         int histVertex = Collections.max(frequencyMap.values());
-        int histStep = histVertex / HISTOGRAM_SECTION_SIZE;
+        float histStep = (float) histVertex / HISTOGRAM_SECTION_SIZE;
 
         frequencyMap.entrySet()
                 .stream()
@@ -40,7 +48,7 @@ public class FileParser implements Parser {
         return report;
     }
 
-    private void formReport(List<String> report, Map<String, Integer> frequencyMap, int totalAmount, int histogramStep, Map.Entry<String, Integer> mapEntry) {
+    private void formReport(List<String> report, Map<String, Integer> frequencyMap, int totalAmount, float histogramStep, Map.Entry<String, Integer> mapEntry) {
         BigDecimal percent = BigDecimal.valueOf(frequencyMap.get(mapEntry.getKey()))
                 .multiply(BigDecimal.valueOf(100))
                 .divide(BigDecimal.valueOf(totalAmount), 2, RoundingMode.HALF_EVEN);
@@ -48,8 +56,8 @@ public class FileParser implements Parser {
         report.add(String.format(REPORT_TEMPLATE, mapEntry.getKey(), percent.floatValue(), histogram));
     }
 
-    private String getHistogram(int histStep, Map.Entry<String, Integer> mapEntry) {
-        int stepCount;
+    private String getHistogram(float histStep, Map.Entry<String, Integer> mapEntry) {
+        float stepCount;
         if (histStep != 0) {
             stepCount = mapEntry.getValue() / histStep;
         } else {
@@ -72,6 +80,14 @@ public class FileParser implements Parser {
                 .forEach(line -> line.chars()
                         .forEach(charI -> frequency.compute(String.valueOf((char) charI), (k, v) -> (v == null) ? 1 : v + 1)));
         return frequency;
+    }
+
+    private Map<String, Integer> getCharFrequency(Stream<String> stringStream, int lineCount) {
+        Map<String, Integer> charFrequency = getCharFrequency(stringStream);
+        return charFrequency.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(lineCount).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public static void checkInputFile(String inputFileName) throws IOException {

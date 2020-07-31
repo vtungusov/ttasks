@@ -1,12 +1,12 @@
 package vtungusov;
 
 import vtungusov.parser.FileParser;
-import vtungusov.report.Report;
 import vtungusov.ui.UIManager;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import static vtungusov.parser.FileParser.checkInputFile;
 import static vtungusov.parser.FileParser.checkOutputFile;
@@ -32,16 +32,21 @@ public class Main {
             }
 
             try {
-                Report symbolFrequencyReport = new FileParser()
-                        .getSymbolFrequencyReport(Files.lines(Paths.get(inputFileName)));
+                FileParser fileParser = new FileParser();
+                Stream<String> stringStream = Files.lines(Paths.get(inputFileName));
+
                 if (lineCount == null) {
-                    symbolFrequencyReport.printToFile(outputFileName);
+                    fileParser
+                            .getSymbolFrequencyReport(stringStream)
+                            .printToFile(outputFileName);
                 } else {
-                    symbolFrequencyReport.printTopToFile(outputFileName, Integer.parseInt(lineCount));
+                    fileParser
+                            .getSymbolFrequencyReport(stringStream, Integer.parseInt(lineCount))
+                            .printToFile(outputFileName);
                 }
                 System.out.println(SUCCESSFULLY_FINISHED);
             } catch (IOException e) {
-                System.out.println("Something wrong, File reading error");
+                System.out.println("Something wrong, file reading error");
             }
         }
     }
