@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 public class FileParser implements Parser {
     private static final int HISTOGRAM_SECTION_SIZE = 100;
     private static final String REPORT_TEMPLATE = "%s (%5.2f): %s";
+    private int totalSymbols = 0;
 
     @Override
     public Report getSymbolFrequencyReport(Stream<String> stringStream) {
@@ -33,9 +34,6 @@ public class FileParser implements Parser {
     }
 
     private List<String> getReportList(Map<String, Integer> frequencyMap) {
-        int totalAmount = frequencyMap.values().stream()
-                .mapToInt(Integer::intValue).sum();
-
         List<String> report = new ArrayList<>();
         int histVertex = Collections.max(frequencyMap.values());
         float histStep = (float) histVertex / HISTOGRAM_SECTION_SIZE;
@@ -43,7 +41,7 @@ public class FileParser implements Parser {
         frequencyMap.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .forEach(entry -> formReport(report, frequencyMap, totalAmount, histStep, entry)
+                .forEach(entry -> formReport(report, frequencyMap, totalSymbols, histStep, entry)
                 );
         return report;
     }
@@ -80,6 +78,7 @@ public class FileParser implements Parser {
                 .forEach(line -> line.chars()
                         .filter(i -> (!Character.isSpaceChar(i)))
                         .forEach(charI -> frequency.compute(String.valueOf((char) charI), (k, v) -> (v == null) ? 1 : v + 1)));
+        this.totalSymbols = frequency.values().stream().mapToInt(Integer::intValue).sum();
         return frequency;
     }
 
