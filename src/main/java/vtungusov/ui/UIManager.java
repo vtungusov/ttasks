@@ -12,8 +12,10 @@ public class UIManager {
         Options options = new Options();
         options.addRequiredOption("f", "filename", true, "file name for parsing");
         options.addOption("o", "output", true, "output report name");
-        options.addOption("t", "top", false, "write only top N report lines (default: 10)");
-        options.getOption("t").setType(Number.class);
+        options.addOption("t", "top", true, "write only top N report lines (default: 10)");
+        Option top = options.getOption("t");
+        top.setType(Number.class);
+        top.setOptionalArg(true);
 
         CommandLineParser parser = new DefaultParser();
 
