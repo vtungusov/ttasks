@@ -78,6 +78,7 @@ public class FileParser implements Parser {
         Map<String, Integer> frequency = new HashMap<>();
         stringStream
                 .forEach(line -> line.chars()
+                        .filter(i -> (!Character.isSpaceChar(i)))
                         .forEach(charI -> frequency.compute(String.valueOf((char) charI), (k, v) -> (v == null) ? 1 : v + 1)));
         return frequency;
     }
