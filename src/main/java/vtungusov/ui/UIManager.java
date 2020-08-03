@@ -2,6 +2,9 @@ package vtungusov.ui;
 
 import org.apache.commons.cli.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class UIManager {
     private static final String DEFAULT_REPORT_NAME = "report.txt";
     private static final int DEFAULT_TOP_COUNT = 10;
@@ -61,8 +64,8 @@ public class UIManager {
         return result;
     }
 
-    public String[] handleOptions() {
-        String[] options = new String[3];
+    public Map<String, String> handleOptions() {
+        Map<String, String> options = new HashMap<>();
 
         getFilenameOpt(options);
         getOutputOpt(options);
@@ -71,28 +74,19 @@ public class UIManager {
         return options;
     }
 
-    private void getFilenameOpt(String[] options) {
-        options[0] = cmd.getOptionValue("f");
+    private void getFilenameOpt(Map<String, String> options) {
+        options.put("f", cmd.getOptionValue("f"));
     }
 
-    private void getOutputOpt(String[] options) {
-        if (cmd.hasOption("o")) {
-            options[1] = cmd.getOptionValue("o");
-        } else {
-            options[1] = DEFAULT_REPORT_NAME;
-        }
+    private void getOutputOpt(Map<String, String> options) {
+        options.compute("o", (k, v) -> (cmd.getOptionValue("o") == null) ?
+                DEFAULT_REPORT_NAME : cmd.getOptionValue("o"));
     }
 
-    private void getTopOpt(String[] options) {
+    private void getTopOpt(Map<String, String> options) {
         if (cmd.hasOption("t")) {
-            try {
-                if (cmd.getOptionValue("t") == null) {
-                    options[2] = String.valueOf(DEFAULT_TOP_COUNT);
-                } else {
-                    options[2] = String.valueOf(cmd.getParsedOptionValue("t"));
-                }
-            } catch (ParseException ignore) {
-            }
+            options.compute("t", (k, v) -> (cmd.getOptionValue("t") == null) ?
+                    String.valueOf(DEFAULT_TOP_COUNT) : cmd.getOptionValue("t"));
         }
     }
 }

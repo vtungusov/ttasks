@@ -13,15 +13,9 @@ public class StreamParser implements Parser<Stream<String>> {
     private static final String REPORT_TEMPLATE = "%s (%5.2f): %s";
 
     @Override
-    public Report getSymbolFrequencyReport(Stream<String> stringStream) {
-        Map<Character, Integer> frequency = getCharFrequency(stringStream);
-        List<String> report = getReportList(frequency, frequency.size());
-        return new FrequencyReport(report);
-    }
-
-    @Override
     public Report getSymbolFrequencyReport(Stream<String> stringStream, int lineCount) {
         Map<Character, Integer> frequency = getCharFrequency(stringStream);
+        lineCount = (lineCount == 0) ? frequency.size() : lineCount;
         List<String> report = getReportList(frequency, lineCount);
         return new FrequencyReport(report);
     }
