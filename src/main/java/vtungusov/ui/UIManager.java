@@ -14,13 +14,29 @@ public class UIManager {
         boolean result = false;
         try {
             cmd = parser.parse(options, args);
-            if (isCorrectType()) {
-                result = true;
-            }
+            result = isCorrectType() && validateTopOpt();
         } catch (ParseException e) {
             new HelpFormatter().printHelp(HELP_TEMPLATE, "options:", options, e.getMessage());
         }
         return result;
+    }
+
+    private boolean validateTopOpt() {
+        boolean isValid;
+        if (cmd.hasOption('t') && isCorrectType()) {
+            String optionValue = cmd.getOptionValue('t');
+            if (optionValue != null) {
+                isValid = Integer.parseInt(optionValue) > 0;
+                if (!isValid) {
+                    System.out.println("Options 't' must be more than 0");
+                }
+            } else {
+                isValid = true;
+            }
+        } else {
+            isValid = !cmd.hasOption("t");
+        }
+        return isValid;
     }
 
     private Options getOptions() {
