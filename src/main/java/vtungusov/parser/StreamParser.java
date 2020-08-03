@@ -6,36 +6,39 @@ import vtungusov.report.Report;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class StreamParser implements Parser<Stream<String>> {
     private static final int HISTOGRAM_SECTION_SIZE = 100;
     private static final String REPORT_TEMPLATE = "%s (%5.2f): %s";
-    private int totalSymbols = 0;
 
     @Override
     public Report getSymbolFrequencyReport(Stream<String> stringStream) {
         Map<Character, Integer> frequency = getCharFrequency(stringStream);
-        List<String> report = getReportList(frequency);
+        List<String> report = getReportList(frequency, frequency.size());
         return new FrequencyReport(report);
     }
 
     @Override
     public Report getSymbolFrequencyReport(Stream<String> stringStream, int lineCount) {
-        Map<Character, Integer> frequency = getCharFrequency(stringStream, lineCount);
-        List<String> report = getReportList(frequency);
+        Map<Character, Integer> frequency = getCharFrequency(stringStream);
+        List<String> report = getReportList(frequency, lineCount);
         return new FrequencyReport(report);
     }
 
-    private List<String> getReportList(Map<Character, Integer> frequencyMap) {
+    private List<String> getReportList(Map<Character, Integer> frequencyMap, int lineCount) {
         List<String> report = new ArrayList<>();
         int histVertex = Collections.max(frequencyMap.values());
         float histStep = (float) histVertex / HISTOGRAM_SECTION_SIZE;
 
+        int totalSymbols = frequencyMap.values().stream()
+                .mapToInt(Integer::intValue)
+                .sum();
+
         frequencyMap.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(lineCount)
                 .forEach(entry -> formReport(report, frequencyMap, totalSymbols, histStep, entry)
                 );
         return report;
@@ -79,20 +82,6 @@ public class StreamParser implements Parser<Stream<String>> {
                 .filter(i -> (!Character.isSpaceChar(i)))
                 .forEach(charI -> frequency.compute((char) charI, (k, v) -> (v == null) ? 1 : v + 1));
 
-        this.totalSymbols = frequency.values().stream()
-                .mapToInt(Integer::intValue)
-                .sum();
-
         return frequency;
-    }
-
-    private Map<Character, Integer> getCharFrequency(Stream<String> stringStream, int lineCount) {
-        Map<Character, Integer> charFrequency = getCharFrequency(stringStream);
-        return charFrequency.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .limit(lineCount)
-                .collect(Collectors
-                        .toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }
