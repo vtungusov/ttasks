@@ -5,6 +5,8 @@ import org.apache.commons.cli.*;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static vtungusov.ui.OptionInfo.*;
+
 public class UIManager {
     private static final String DEFAULT_REPORT_NAME = "report.txt";
     private static final int DEFAULT_TOP_LINE_COUNT = 10;
@@ -13,9 +15,6 @@ public class UIManager {
     public static final String TOP_VALUE_LIMIT = "Options 't' must be natural number witch more than 0 and less than " + Integer.MAX_VALUE;
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
     public static final String INCORRECT_DESCRIPTION_IN = "Incorrect type description in ";
-    public static final char FILENAME = 'f';
-    public static final char TOP = 't';
-    public static final char OUTPUT = 'o';
     private CommandLine cmd;
 
     public void handleOptions(String[] args) throws BadArgumentsException {
@@ -40,8 +39,8 @@ public class UIManager {
 
     private boolean validateTopOpt() {
         boolean isValid = false;
-        if (cmd.hasOption(TOP)) {
-            String optionValue = cmd.getOptionValue(TOP);
+        if (cmd.hasOption(TOP.shortName)) {
+            String optionValue = cmd.getOptionValue(TOP.shortName);
             if (optionValue != null) {
                 try {
                     int parseInt = Integer.parseInt(optionValue);
@@ -95,19 +94,19 @@ public class UIManager {
     }
 
     public String getInputFileName() {
-        return cmd.getOptionValue(FILENAME);
+        return cmd.getOptionValue(FILENAME.shortName);
     }
 
     public String getOutputFileName() {
-        String value = cmd.getOptionValue(OUTPUT);
+        String value = cmd.getOptionValue(OUTPUT.shortName);
         return value == null ? DEFAULT_REPORT_NAME : value;
     }
 
     public Optional<Integer> getTopLineCount() throws BadArgumentsException {
         if (validateTopOpt()) {
             Optional<Integer> result = Optional.empty();
-            if (cmd.hasOption(TOP)) {
-                String optionValue = cmd.getOptionValue(TOP);
+            if (cmd.hasOption(TOP.shortName)) {
+                String optionValue = cmd.getOptionValue(TOP.shortName);
                 result = (optionValue == null) ?
                         Optional.of(DEFAULT_TOP_LINE_COUNT) : Optional.of(Integer.parseInt(optionValue));
             }
