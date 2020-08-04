@@ -14,7 +14,6 @@ public class UIManager {
     public static final String HEADER = "options:";
     public static final String TOP_VALUE_LIMIT = "Options 't' must be natural number witch more than 0 and less than " + Integer.MAX_VALUE;
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
-    public static final String INCORRECT_DESCRIPTION_IN = "Incorrect type description in ";
     private CommandLine cmd;
 
     public void handleOptions(String[] args) throws BadArgumentsException {
@@ -74,23 +73,20 @@ public class UIManager {
     private Options getOptions() {
         Options options = new Options();
         Arrays.stream(OptionInfo.values())
-                .forEach(o -> {
-                            try {
-                                options.addOption(Option.builder(o.shortName)
-                                        .longOpt(o.longName)
-                                        .hasArg(o.hasArg)
-                                        .desc(o.description)
-                                        .required(o.required)
-                                        .optionalArg(o.optionalArg)
-                                        .type(Class.forName(o.argType))
-                                        .build());
-                            } catch (ClassNotFoundException e) {
-                                e.printStackTrace(System.err);
-                                System.err.println(INCORRECT_DESCRIPTION_IN + OptionInfo.class);
-                            }
-                        }
-                );
+                .map(this::createOption)
+                .forEach(options::addOption);
         return options;
+    }
+
+    private Option createOption(OptionInfo o) {
+        return Option.builder(o.shortName)
+                .longOpt(o.longName)
+                .hasArg(o.hasArg)
+                .desc(o.description)
+                .required(o.required)
+                .optionalArg(o.optionalArg)
+                .type(o.argType)
+                .build();
     }
 
     public String getInputFileName() {
