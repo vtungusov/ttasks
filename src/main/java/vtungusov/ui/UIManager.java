@@ -10,7 +10,7 @@ public class UIManager {
     private static final int DEFAULT_TOP_LINE_COUNT = 10;
     private static final String HELP_TEMPLATE = "java -jar [jar name] [options]";
     public static final String HEADER = "options:";
-    public static final String TOP_VALUE_LIMIT = "Options 't' must be more than 0 and less than " + Integer.MAX_VALUE;
+    public static final String TOP_VALUE_LIMIT = "Options 't' must be natural number witch more than 0 and less than " + Integer.MAX_VALUE;
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
     public static final String INCORRECT_DESCRIPTION_IN = "Incorrect type description in ";
     public static final char FILENAME = 'f';
