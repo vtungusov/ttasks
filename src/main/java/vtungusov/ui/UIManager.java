@@ -25,19 +25,24 @@ public class UIManager {
     }
 
     private boolean validateTopOpt() {
-        boolean isValid;
-        if (cmd.hasOption('t') && isCorrectType()) {
+        boolean isValid = false;
+        if (cmd.hasOption('t')) {
             String optionValue = cmd.getOptionValue('t');
             if (optionValue != null) {
-                isValid = Integer.parseInt(optionValue) > 0;
-                if (!isValid) {
-                    System.out.println("Options 't' must be more than 0");
+                try {
+                    int parseInt = Integer.parseInt(optionValue);
+                    isValid = (parseInt > 0) && (parseInt < Integer.MAX_VALUE);
+                    if (!isValid) {
+                        System.out.println("Options 't' must be more than 0");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Options 't' must be less than " + Integer.MAX_VALUE);
                 }
             } else {
                 isValid = true;
             }
         } else {
-            isValid = !cmd.hasOption("t");
+            isValid = true;
         }
         return isValid;
     }
