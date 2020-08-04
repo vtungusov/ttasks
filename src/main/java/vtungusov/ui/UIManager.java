@@ -2,41 +2,55 @@ package vtungusov.ui;
 
 import org.apache.commons.cli.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Optional;
 
 public class UIManager {
     private static final String DEFAULT_REPORT_NAME = "report.txt";
-    private static final int DEFAULT_TOP_COUNT = 10;
+    private static final int DEFAULT_TOP_LINE_COUNT = 10;
     private static final String HELP_TEMPLATE = "java -jar [jar name] [options]";
+    public static final String HEADER = "options:";
+    public static final String TOP_VALUE_LIMIT = "Options 't' must be more than 0 and less than " + Integer.MAX_VALUE;
+    public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
+    public static final String INCORRECT_DESCRIPTION_IN = "Incorrect type description in ";
+    public static final char FILENAME = 'f';
+    public static final char TOP = 't';
+    public static final char OUTPUT = 'o';
     private CommandLine cmd;
 
-    public boolean validateOptions(String[] args) {
+    public void handleOptions(String[] args) throws BadArgumentsException {
+        if (!validateOptions(args)) {
+            throw new BadArgumentsException();
+        }
+    }
+
+    private boolean validateOptions(String[] args) {
         Options options = getOptions();
         CommandLineParser parser = new DefaultParser();
         boolean result = false;
         try {
             cmd = parser.parse(options, args);
-            result = isCorrectType() && validateTopOpt();
+            result = options.getOptions().stream()
+                    .allMatch(this::isCorrectType);
         } catch (ParseException e) {
-            new HelpFormatter().printHelp(HELP_TEMPLATE, "options:", options, e.getMessage());
+            new HelpFormatter().printHelp(HELP_TEMPLATE, HEADER, options, e.getMessage());
         }
         return result;
     }
 
     private boolean validateTopOpt() {
         boolean isValid = false;
-        if (cmd.hasOption('t')) {
-            String optionValue = cmd.getOptionValue('t');
+        if (cmd.hasOption(TOP)) {
+            String optionValue = cmd.getOptionValue(TOP);
             if (optionValue != null) {
                 try {
                     int parseInt = Integer.parseInt(optionValue);
                     isValid = (parseInt > 0) && (parseInt < Integer.MAX_VALUE);
                     if (!isValid) {
-                        System.out.println("Options 't' must be more than 0");
+                        System.out.println(TOP_VALUE_LIMIT);
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("Options 't' must be less than " + Integer.MAX_VALUE);
+                    System.out.println(TOP_VALUE_LIMIT);
                 }
             } else {
                 isValid = true;
@@ -47,51 +61,57 @@ public class UIManager {
         return isValid;
     }
 
-    private Options getOptions() {
-        Options options = new Options();
-        options.addRequiredOption("f", "filename", true, "file name for parsing");
-        options.addOption("o", "output", true, "output report name");
-        options.addOption("t", "top", true, "write only top N report lines (default: 10)");
-        Option top = options.getOption("t");
-        top.setType(Number.class);
-        top.setOptionalArg(true);
-        return options;
-    }
-
-    private boolean isCorrectType() {
+    private boolean isCorrectType(Option option) {
         boolean result = false;
         try {
-            cmd.getParsedOptionValue("t");
+            cmd.getParsedOptionValue(option.getOpt());
             result = true;
         } catch (ParseException e) {
-            System.out.println("Incorrect argument type for option -t");
+            System.out.println(INCORRECT_ARGUMENT + option.getOpt());
         }
         return result;
     }
 
-    public Map<String, String> handleOptions() {
-        Map<String, String> options = new HashMap<>();
-
-        getFilenameOpt(options);
-        getOutputOpt(options);
-        getTopOpt(options);
-
+    private Options getOptions() {
+        Options options = new Options();
+        Arrays.stream(OptionInfo.values())
+                .forEach(o -> {
+                            try {
+                                options.addOption(Option.builder(o.shortName)
+                                        .longOpt(o.longName)
+                                        .hasArg(o.hasArg)
+                                        .desc(o.description)
+                                        .required(o.required)
+                                        .optionalArg(o.optionalArg)
+                                        .type(Class.forName(o.argType))
+                                        .build());
+                            } catch (ClassNotFoundException e) {
+                                e.printStackTrace(System.err);
+                                System.err.println(INCORRECT_DESCRIPTION_IN + OptionInfo.class);
+                            }
+                        }
+                );
         return options;
     }
 
-    private void getFilenameOpt(Map<String, String> options) {
-        options.put("f", cmd.getOptionValue("f"));
+    public String getInputFileName() {
+        return cmd.getOptionValue(FILENAME);
     }
 
-    private void getOutputOpt(Map<String, String> options) {
-        options.compute("o", (k, v) -> (cmd.getOptionValue("o") == null) ?
-                DEFAULT_REPORT_NAME : cmd.getOptionValue("o"));
+    public String getOutputFileName() {
+        String value = cmd.getOptionValue(OUTPUT);
+        return value == null ? DEFAULT_REPORT_NAME : value;
     }
 
-    private void getTopOpt(Map<String, String> options) {
-        if (cmd.hasOption("t")) {
-            options.compute("t", (k, v) -> (cmd.getOptionValue("t") == null) ?
-                    String.valueOf(DEFAULT_TOP_COUNT) : cmd.getOptionValue("t"));
-        }
+    public Optional<Integer> getTopLineCount() throws BadArgumentsException {
+        if (validateTopOpt()) {
+            Optional<Integer> result = Optional.empty();
+            if (cmd.hasOption(TOP)) {
+                String optionValue = cmd.getOptionValue(TOP);
+                result = (optionValue == null) ?
+                        Optional.of(DEFAULT_TOP_LINE_COUNT) : Optional.of(Integer.parseInt(optionValue));
+            }
+            return result;
+        } else throw new BadArgumentsException();
     }
 }

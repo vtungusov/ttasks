@@ -11,11 +11,12 @@ import java.util.stream.Stream;
 public class StreamParser implements Parser<Stream<String>> {
     private static final int HISTOGRAM_SECTION_SIZE = 100;
     private static final String REPORT_TEMPLATE = "%s (%5.2f): %s";
+    public static final String HISTOGRAM_UNIT = "#";
 
     @Override
-    public Report getSymbolFrequencyReport(Stream<String> stringStream, int lineCount) {
+    public Report getSymbolFrequencyReport(Stream<String> stringStream, Integer topLineCount) {
         Map<Character, Integer> frequency = getCharFrequency(stringStream);
-        lineCount = (lineCount == 0) ? frequency.size() : lineCount;
+        int lineCount = (topLineCount == null) ? frequency.size() : topLineCount;
         List<String> report = getReportList(frequency, lineCount);
         return new FrequencyReport(report);
     }
@@ -65,7 +66,7 @@ public class StreamParser implements Parser<Stream<String>> {
 
     private void addGraphToRareSymbol(StringBuilder sb) {
         if (sb.length() < 1) {
-            sb.append("#");
+            sb.append(HISTOGRAM_UNIT);
         }
     }
 
