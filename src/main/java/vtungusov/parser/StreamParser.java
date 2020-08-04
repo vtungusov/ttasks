@@ -12,6 +12,8 @@ public class StreamParser implements Parser<Stream<String>> {
     private static final int HISTOGRAM_SECTION_SIZE = 100;
     private static final String REPORT_TEMPLATE = "%s (%5.2f): %s";
     public static final String HISTOGRAM_UNIT = "#";
+    public static final int ACCURACY = 2;
+    public static final int PERCENT_LIMIT = 100;
 
     @Override
     public Report getSymbolFrequencyReport(Stream<String> stringStream, Integer topLineCount) {
@@ -41,8 +43,8 @@ public class StreamParser implements Parser<Stream<String>> {
 
     private void formReport(List<String> report, Map<Character, Integer> frequencyMap, int totalAmount, float histogramStep, Map.Entry<Character, Integer> mapEntry) {
         BigDecimal percent = BigDecimal.valueOf(frequencyMap.get(mapEntry.getKey()))
-                .multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(totalAmount), 2, RoundingMode.HALF_EVEN);
+                .multiply(BigDecimal.valueOf(PERCENT_LIMIT))
+                .divide(BigDecimal.valueOf(totalAmount), ACCURACY, RoundingMode.HALF_EVEN);
         String histogram = getHistogram(histogramStep, mapEntry);
         report.add(String.format(REPORT_TEMPLATE, mapEntry.getKey(), percent.floatValue(), histogram));
     }
@@ -57,7 +59,7 @@ public class StreamParser implements Parser<Stream<String>> {
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < stepCount; i++) {
-            sb.append('#');
+            sb.append(HISTOGRAM_UNIT);
         }
 
         addGraphToRareSymbol(sb);
