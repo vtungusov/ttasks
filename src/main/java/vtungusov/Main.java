@@ -7,7 +7,6 @@ import vtungusov.ui.UIManager;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static vtungusov.util.FileUtil.checkInputFile;
@@ -22,7 +21,7 @@ public class Main {
         UIManager uiManager = new UIManager();
         String inputFileName;
         String outputFileName;
-        Optional<Integer> lineCount;
+        Integer lineCount;
 
         try {
             uiManager.handleOptions(args);
@@ -44,7 +43,7 @@ public class Main {
             Stream<String> stringStream = Files.lines(Paths.get(inputFileName));
 
             streamParser
-                    .getSymbolFrequencyReport(stringStream, lineCount.orElse(null))
+                    .getSymbolFrequencyReport(stringStream, lineCount)
                     .printToFile(outputFileName);
 
             System.out.println(SUCCESSFULLY_FINISHED);

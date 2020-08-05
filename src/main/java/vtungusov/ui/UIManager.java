@@ -3,7 +3,6 @@ package vtungusov.ui;
 import org.apache.commons.cli.*;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 import static vtungusov.ui.OptionInfo.*;
 
@@ -98,13 +97,13 @@ public class UIManager {
         return value == null ? DEFAULT_REPORT_NAME : value;
     }
 
-    public Optional<Integer> getTopLineCount() throws BadArgumentsException {
+    public Integer getTopLineCount() throws BadArgumentsException {
         if (validateTopOpt()) {
-            Optional<Integer> result = Optional.empty();
+            Integer result = null;
             if (cmd.hasOption(TOP.shortName)) {
                 String optionValue = cmd.getOptionValue(TOP.shortName);
                 result = (optionValue == null) ?
-                        Optional.of(DEFAULT_TOP_LINE_COUNT) : Optional.of(Integer.parseInt(optionValue));
+                        DEFAULT_TOP_LINE_COUNT : Integer.parseInt(optionValue);
             }
             return result;
         } else throw new BadArgumentsException();
