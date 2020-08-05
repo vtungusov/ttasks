@@ -31,10 +31,10 @@ public class Main {
 
             checkInputFile(inputFileName);
             checkOutputFile(outputFileName);
-        } catch (BadArgumentsException e) {
-            return;
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+        } catch (BadArgumentsException | IOException e) {
+            if (e.getMessage() != null) {
+                System.out.println(e.getMessage());
+            }
             return;
         }
 

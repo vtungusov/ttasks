@@ -11,7 +11,7 @@ public class UIManager {
     private static final int DEFAULT_TOP_LINE_COUNT = 10;
     private static final String HELP_TEMPLATE = "java -jar [jar name] [options]";
     public static final String HEADER = "options:";
-    public static final String TOP_VALUE_LIMIT = "Options 't' must be natural number witch more than 0 and less than " + Integer.MAX_VALUE;
+    public static final String TOP_VALUE_LIMIT = "Options 't' must be natural number more than 0 and less than " + Integer.MAX_VALUE;
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
     private CommandLine cmd;
 
@@ -33,29 +33,6 @@ public class UIManager {
             new HelpFormatter().printHelp(HELP_TEMPLATE, HEADER, options, e.getMessage());
         }
         return result;
-    }
-
-    private boolean validateTopOpt() {
-        boolean isValid = false;
-        if (cmd.hasOption(TOP.shortName)) {
-            String optionValue = cmd.getOptionValue(TOP.shortName);
-            if (optionValue != null) {
-                try {
-                    int parseInt = Integer.parseInt(optionValue);
-                    isValid = (parseInt > 0) && (parseInt < Integer.MAX_VALUE);
-                    if (!isValid) {
-                        System.out.println(TOP_VALUE_LIMIT);
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println(TOP_VALUE_LIMIT);
-                }
-            } else {
-                isValid = true;
-            }
-        } else {
-            isValid = true;
-        }
-        return isValid;
     }
 
     private boolean isCorrectType(Option option) {
@@ -98,14 +75,31 @@ public class UIManager {
     }
 
     public Integer getTopLineCount() throws BadArgumentsException {
-        if (validateTopOpt()) {
-            Integer result = null;
-            if (cmd.hasOption(TOP.shortName)) {
-                String optionValue = cmd.getOptionValue(TOP.shortName);
+        Integer result = null;
+        boolean hasOption = cmd.hasOption(TOP.shortName);
+        String optionValue = cmd.getOptionValue(TOP.shortName);
+
+        if (hasOption) {
+            boolean isValid = validateValue(optionValue);
+            if (isValid) {
                 result = (optionValue == null) ?
                         DEFAULT_TOP_LINE_COUNT : Integer.parseInt(optionValue);
             }
-            return result;
-        } else throw new BadArgumentsException();
+        }
+        return result;
+    }
+
+    private boolean validateValue(String optionValue) throws BadArgumentsException {
+        try {
+            if (optionValue != null) {
+                int intValue = Integer.parseInt(optionValue);
+                if (intValue < 1) {
+                    throw new BadArgumentsException(TOP_VALUE_LIMIT);
+                }
+            }
+        } catch (NumberFormatException e) {
+            throw new BadArgumentsException(TOP_VALUE_LIMIT);
+        }
+        return true;
     }
 }
