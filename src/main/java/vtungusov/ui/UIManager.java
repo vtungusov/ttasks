@@ -13,6 +13,7 @@ public class UIManager {
     public static final String HEADER = "options:";
     public static final String TOP_VALUE_LIMIT = "Options 't' must be natural number more than 0 and less than " + Integer.MAX_VALUE;
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
+    public static final int MIN_TOP_VALUE = 1;
     private CommandLine cmd;
 
     public void handleOptions(String[] args) throws BadArgumentsException {
@@ -80,26 +81,23 @@ public class UIManager {
         String optionValue = cmd.getOptionValue(TOP.shortName);
 
         if (hasOption) {
-            boolean isValid = validateValue(optionValue);
-            if (isValid) {
-                result = (optionValue == null) ?
-                        DEFAULT_TOP_LINE_COUNT : Integer.parseInt(optionValue);
-            }
+            validateTopValue(optionValue);
+            result = (optionValue == null) ?
+                    DEFAULT_TOP_LINE_COUNT : Integer.parseInt(optionValue);
         }
         return result;
     }
 
-    private boolean validateValue(String optionValue) throws BadArgumentsException {
+    private void validateTopValue(String optionValue) throws BadArgumentsException {
         try {
             if (optionValue != null) {
                 int intValue = Integer.parseInt(optionValue);
-                if (intValue < 1) {
+                if (intValue < MIN_TOP_VALUE) {
                     throw new BadArgumentsException(TOP_VALUE_LIMIT);
                 }
             }
         } catch (NumberFormatException e) {
             throw new BadArgumentsException(TOP_VALUE_LIMIT);
         }
-        return true;
     }
 }

@@ -14,6 +14,7 @@ public class StreamParser implements Parser<Stream<String>> {
     public static final String HISTOGRAM_UNIT = "#";
     public static final int ACCURACY = 2;
     public static final int PERCENT_LIMIT = 100;
+    public static final int HISTOGRAM_MIN_COUNT = 1;
 
     @Override
     public Report getSymbolFrequencyReport(Stream<String> stringStream, Integer topLineCount) {
@@ -67,7 +68,7 @@ public class StreamParser implements Parser<Stream<String>> {
     }
 
     private void addGraphToRareSymbol(StringBuilder sb) {
-        if (sb.length() < 1) {
+        if (sb.length() < HISTOGRAM_MIN_COUNT) {
             sb.append(HISTOGRAM_UNIT);
         }
     }
