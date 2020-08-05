@@ -81,21 +81,23 @@ public class UIManager {
         String optionValue = cmd.getOptionValue(TOP.shortName);
 
         if (hasOption) {
-            validateTopValue(optionValue);
+            Integer validateTopValue = validateAndGetTopValue(optionValue);
             result = (optionValue == null) ?
-                    DEFAULT_TOP_LINE_COUNT : Integer.parseInt(optionValue);
+                    DEFAULT_TOP_LINE_COUNT : validateTopValue;
         }
         return result;
     }
 
-    private void validateTopValue(String optionValue) throws BadArgumentsException {
+    private Integer validateAndGetTopValue(String optionValue) throws BadArgumentsException {
         try {
+            Integer intValue = null;
             if (optionValue != null) {
-                int intValue = Integer.parseInt(optionValue);
+                intValue = Integer.parseInt(optionValue);
                 if (intValue < MIN_TOP_VALUE) {
                     throw new BadArgumentsException(TOP_VALUE_LIMIT);
                 }
             }
+            return intValue;
         } catch (NumberFormatException e) {
             throw new BadArgumentsException(TOP_VALUE_LIMIT);
         }

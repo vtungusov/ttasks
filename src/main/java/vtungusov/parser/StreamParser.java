@@ -1,14 +1,13 @@
 package vtungusov.parser;
 
 import vtungusov.report.FrequencyReport;
-import vtungusov.report.Report;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class StreamParser implements Parser<Stream<String>> {
+public class StreamParser {
     private static final int HISTOGRAM_SECTION_SIZE = 100;
     private static final String REPORT_TEMPLATE = "%s (%5.2f): %s";
     public static final String HISTOGRAM_UNIT = "#";
@@ -16,8 +15,7 @@ public class StreamParser implements Parser<Stream<String>> {
     public static final int PERCENT_LIMIT = 100;
     public static final int HISTOGRAM_MIN_COUNT = 1;
 
-    @Override
-    public Report getSymbolFrequencyReport(Stream<String> stringStream, Integer topLineCount) {
+    public FrequencyReport getSymbolFrequencyReport(Stream<String> stringStream, Integer topLineCount) {
         Map<Character, Integer> frequency = getCharFrequency(stringStream);
         int lineCount = (topLineCount == null) ? frequency.size() : topLineCount;
         List<String> report = getReportList(frequency, lineCount);

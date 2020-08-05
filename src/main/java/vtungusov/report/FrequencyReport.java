@@ -5,14 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class FrequencyReport implements Report {
+public class FrequencyReport {
     private final List<String> report;
 
     public FrequencyReport(List<String> report) {
         this.report = report;
     }
 
-    @Override
     public void printToFile(String fileName) {
         try {
             Files.write(Paths.get(fileName), report);
