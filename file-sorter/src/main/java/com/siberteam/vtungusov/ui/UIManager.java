@@ -1,10 +1,10 @@
-package vtungusov.ui;
+package com.siberteam.vtungusov.ui;
 
 import org.apache.commons.cli.*;
 
 import java.util.Arrays;
 
-import static vtungusov.ui.OptionInfo.*;
+import static com.siberteam.vtungusov.ui.OptionInfo.*;
 
 public class UIManager {
     private static final String DEFAULT_SORTED_FILENAME = "sorted.txt";

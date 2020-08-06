@@ -1,4 +1,4 @@
-package vtungusov.ui;
+package com.siberteam.vtungusov.ui;
 
 public class BadArgumentsException extends Exception {
     public BadArgumentsException() {

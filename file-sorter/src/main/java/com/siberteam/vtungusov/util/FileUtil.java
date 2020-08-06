@@ -1,4 +1,4 @@
-package vtungusov.util;
+package com.siberteam.vtungusov.util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

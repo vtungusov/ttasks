@@ -59,7 +59,7 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
                             <mainClass>
-                                vtungusov.Main
+                                com.siberteam.vtungusov.Main
                             </mainClass>
                         </manifest>
                     </archive>

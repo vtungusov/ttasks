@@ -1,4 +1,4 @@
-package vtungusov.ui;
+package com.siberteam.vtungusov.ui;
 
 public enum OptionInfo {
     FILENAME("f", "filename", true, "file name for sorting",

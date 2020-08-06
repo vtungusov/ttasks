@@ -1,4 +1,4 @@
-package vtungusov.comparator;
+package com.siberteam.vtungusov.comparator;
 
 import java.util.Comparator;
 

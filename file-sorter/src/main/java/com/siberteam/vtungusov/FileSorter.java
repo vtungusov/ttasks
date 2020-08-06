@@ -1,6 +1,6 @@
-package vtungusov;
+package com.siberteam.vtungusov;
 
-import vtungusov.sorter.Sorter;
+import com.siberteam.vtungusov.sorter.Sorter;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static vtungusov.util.FileUtil.checkInputFile;
-import static vtungusov.util.FileUtil.checkOutputFile;
+import static com.siberteam.vtungusov.util.FileUtil.checkInputFile;
+import static com.siberteam.vtungusov.util.FileUtil.checkOutputFile;
 
 public class FileSorter {
-    private static final String STRING_SPLIT_REGEX = "[ ,.\"'`]";
+    private static final String STRING_SPLIT_REGEX = "[- ,\uFEFF\\]#$()/.\"'`“%”:;?!*0-9]";
     private Sorter sorter;
 
     private static String[] split(String s) {

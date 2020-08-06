@@ -1,6 +1,6 @@
-package vtungusov.sorter;
+package com.siberteam.vtungusov.sorter;
 
-import vtungusov.comparator.WordLengthComparator;
+import com.siberteam.vtungusov.comparator.WordLengthComparator;
 
 import java.util.Comparator;
 import java.util.stream.Stream;

@@ -1,7 +1,7 @@
-package vtungusov;
+package com.siberteam.vtungusov;
 
-import vtungusov.ui.BadArgumentsException;
-import vtungusov.ui.UIManager;
+import com.siberteam.vtungusov.ui.BadArgumentsException;
+import com.siberteam.vtungusov.ui.UIManager;
 
 import java.io.IOException;
 

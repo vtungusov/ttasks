@@ -1,4 +1,4 @@
-package vtungusov.sorter;
+package com.siberteam.vtungusov.sorter;
 
 import java.util.stream.Stream;
 
