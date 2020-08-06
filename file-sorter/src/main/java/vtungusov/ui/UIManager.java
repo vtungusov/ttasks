@@ -7,11 +7,11 @@ import java.util.Arrays;
 import static vtungusov.ui.OptionInfo.*;
 
 public class UIManager {
-    private static final String DEFAULT_SORTED_FILENAME = "sorted";
+    private static final String DEFAULT_SORTED_FILENAME = "sorted.txt";
     private static final String HELP_TEMPLATE = "java -jar [jar name] [options]";
     public static final String HEADER = "options:";
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
-    public static final String INVALID_CLASS_ARGUMENT = "Invalid arguments value for 'c' option. Class now supported.";
+    public static final String INVALID_CLASS_ARGUMENT = "Invalid arguments value for 'c' option. Class not supported.";
     private CommandLine cmd;
 
     public void handleOptions(String[] args) throws BadArgumentsException {
@@ -73,7 +73,7 @@ public class UIManager {
         return value == null ? DEFAULT_SORTED_FILENAME : value;
     }
 
-    public Class<?> getSortClass() throws BadArgumentsException {
+    public Class<?> getSorterClass() throws BadArgumentsException {
         try {
             String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
             Class<?> optionClass = Class.forName(optionValue);
@@ -85,7 +85,6 @@ public class UIManager {
         } catch (ClassNotFoundException e) {
             throw new BadArgumentsException(INVALID_CLASS_ARGUMENT);
         }
-
     }
 
     private boolean validateSortClass(Class<?> className) {
