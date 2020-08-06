@@ -20,16 +20,13 @@ public class Main {
             inputFileName = uiManager.getInputFileName();
             outputFileName = uiManager.getOutputFileName();
             sorterClass = uiManager.getSorterClass();
+            new FileSorter()
+                    .sort(inputFileName, outputFileName, sorterClass);
+            System.out.println(SUCCESSFULLY_FINISHED);
         } catch (BadArgumentsException e) {
             if (e.getMessage() != null) {
                 System.out.println(e.getMessage());
             }
-            return;
-        }
-        try {
-            new FileSorter()
-                    .sort(inputFileName, outputFileName, sorterClass);
-            System.out.println(SUCCESSFULLY_FINISHED);
         } catch (IOException e) {
             if (e.getMessage() != null) {
                 System.out.println(e.getMessage());
