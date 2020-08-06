@@ -3,7 +3,6 @@ package com.siberteam.vtungusov.sorter;
 import java.util.stream.Stream;
 
 public class AlphabetReverseWordSorter implements Sorter {
-
     @Override
     public Stream<String> sort(Stream<String> wordStream) {
         return wordStream

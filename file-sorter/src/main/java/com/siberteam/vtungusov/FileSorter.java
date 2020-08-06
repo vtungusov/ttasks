@@ -26,9 +26,7 @@ public class FileSorter {
     public void sort(String inputFileName, String outputFileName, Class<?> sorterClass) throws IOException {
         validateFiles(inputFileName, outputFileName);
         initSorter(sorterClass);
-
         Stream<String> sortedWords = prepareAndSort(inputFileName);
-
         saveToFile(outputFileName, sortedWords);
     }
 

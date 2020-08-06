@@ -26,11 +26,9 @@ public class Main {
             }
             return;
         }
-
         try {
             new FileSorter()
                     .sort(inputFileName, outputFileName, sorterClass);
-
             System.out.println(SUCCESSFULLY_FINISHED);
         } catch (IOException e) {
             if (e.getMessage() != null) {
