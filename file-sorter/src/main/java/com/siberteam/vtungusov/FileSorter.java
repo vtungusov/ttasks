@@ -19,11 +19,7 @@ public class FileSorter {
     private static final String STRING_SPLIT_REGEX = "[- ,\uFEFF\\]#$()/.\"'`“%”:;?!*0-9]";
     private Sorter sorter;
 
-    private static String[] split(String s) {
-        return s.split(STRING_SPLIT_REGEX);
-    }
-
-    public void sort(String inputFileName, String outputFileName, Class<?> sorterClass) throws IOException {
+    public void sort(String inputFileName, String outputFileName, Class<? extends Sorter> sorterClass) throws IOException {
         validateFiles(inputFileName, outputFileName);
         initSorter(sorterClass);
         Stream<String> sortedWords = prepareAndSort(inputFileName);
@@ -37,7 +33,7 @@ public class FileSorter {
 
     private Stream<String> prepareAndSort(String inputFileName) throws IOException {
         Stream<String> wordStream = Files.lines(Paths.get(inputFileName))
-                .map(FileSorter::split)
+                .map(line -> line.split(STRING_SPLIT_REGEX))
                 .flatMap(Arrays::stream);
         return sorter.sort(wordStream);
     }
