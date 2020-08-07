@@ -16,7 +16,7 @@ import static com.siberteam.vtungusov.util.FileUtil.checkInputFile;
 import static com.siberteam.vtungusov.util.FileUtil.checkOutputFile;
 
 public class FileSorter {
-    private static final String STRING_SPLIT_REGEX = "[- ,\uFEFF\\]#$()/.\"'`“%”:;?!*0-9]";
+    private static final String STRING_SPLIT_REGEX = "[^a-zA-Z]";
     private Sorter sorter;
 
     public void sort(String inputFileName, String outputFileName, Class<? extends Sorter> sorterClass) throws IOException {
