@@ -19,10 +19,10 @@ public class FileSorter {
     private static final String STRING_SPLIT_REGEX = "[^a-zA-Z]";
     private Sorter sorter;
 
-    public void sort(String inputFileName, String outputFileName, Class<? extends Sorter> sorterClass) throws IOException {
+    public void sort(String inputFileName, String outputFileName, Class<? extends Sorter> sorterClass, boolean descSort) throws IOException {
         validateFiles(inputFileName, outputFileName);
         initSorter(sorterClass);
-        Stream<String> sortedWords = prepareAndSort(inputFileName);
+        Stream<String> sortedWords = prepareAndSort(inputFileName, descSort);
         saveToFile(outputFileName, sortedWords);
     }
 
@@ -32,12 +32,12 @@ public class FileSorter {
         Files.write(Paths.get(outputFileName), stringList);
     }
 
-    private Stream<String> prepareAndSort(String inputFileName) throws IOException {
+    private Stream<String> prepareAndSort(String inputFileName, boolean descSort) throws IOException {
         Stream<SortedPair> wordStream = Files.lines(Paths.get(inputFileName))
                 .map(line -> line.split(STRING_SPLIT_REGEX))
                 .flatMap(Arrays::stream)
                 .map(s -> new SortedPair(s, s));
-        return sorter.sort(wordStream);
+        return sorter.sort(wordStream, descSort);
     }
 
     private void initSorter(Class<?> sorterClass) {

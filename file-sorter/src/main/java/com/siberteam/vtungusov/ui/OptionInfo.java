@@ -6,7 +6,9 @@ public enum OptionInfo {
     OUTPUT("o", "output", true, "output filename",
             false, false, String.class),
     SORT_CLASS("c", "class", true, "java class which realise sorting. Format: vtungusov.sorter.AlphabetSorter",
-            true, false, Class.class);
+            true, false, Class.class),
+    DESC_SORT_TYPE("d", "descending", false, "Descend sorting output words (ascend sorting without this options)",
+            false, false, String.class);
 
     String shortName;
     String longName;

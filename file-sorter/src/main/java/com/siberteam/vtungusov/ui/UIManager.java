@@ -80,13 +80,18 @@ public class UIManager {
             Class<?> optionClass = Class.forName(optionValue);
             boolean isSorter = Arrays.stream(optionClass.getInterfaces())
                     .anyMatch(clazz -> clazz == Sorter.class);
-            if (isSorter) {
+            Object instance = optionClass.newInstance();
+            if (instance instanceof Sorter) {
                 return (Class<? extends Sorter>) optionClass;
             } else {
                 throw new BadArgumentsException(INVALID_CLASS_ARGUMENT);
             }
-        } catch (ClassNotFoundException | ClassCastException e) {
+        } catch (ClassNotFoundException | ClassCastException | IllegalAccessException | InstantiationException e) {
             throw new BadArgumentsException(INVALID_CLASS_ARGUMENT);
         }
+    }
+
+    public boolean getSortType() {
+        return cmd.hasOption(DESC_SORT_TYPE.shortName);
     }
 }

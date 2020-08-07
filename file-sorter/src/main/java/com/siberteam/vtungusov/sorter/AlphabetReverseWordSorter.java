@@ -4,13 +4,13 @@ import com.siberteam.vtungusov.filesorter.SortedPair;
 
 import java.util.stream.Stream;
 
-public class AlphabetReverseWordSorter implements Sorter {
+public class AlphabetReverseWordSorter extends AbstractSorter {
     @Override
-    public Stream<String> sort(Stream<SortedPair> pairStream) {
+    public Stream<String> sort(Stream<SortedPair> pairStream, boolean descSort) {
         return pairStream
                 .distinct()
                 .map(pair -> new SortedPair(pair.getKey(), reverseWord(pair.getValue())))
-                .sorted()
+                .sorted(getComparator(descSort))
                 .map(SortedPair::toString);
     }
 

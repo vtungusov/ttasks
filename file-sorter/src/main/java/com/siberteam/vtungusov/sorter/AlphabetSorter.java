@@ -4,12 +4,12 @@ import com.siberteam.vtungusov.filesorter.SortedPair;
 
 import java.util.stream.Stream;
 
-public class AlphabetSorter implements Sorter {
+public class AlphabetSorter extends AbstractSorter {
     @Override
-    public Stream<String> sort(Stream<SortedPair> pairStream) {
+    public Stream<String> sort(Stream<SortedPair> pairStream, boolean descSort) {
         return pairStream
                 .distinct()
-                .sorted()
+                .sorted(getComparator(descSort))
                 .map(SortedPair::toString);
     }
 }

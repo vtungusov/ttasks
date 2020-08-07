@@ -17,13 +17,15 @@ public class Main {
         String inputFileName;
         String outputFileName;
         Class<? extends Sorter> sorterClass;
+        boolean descSort;
         try {
             uiManager.handleOptions(args);
             inputFileName = uiManager.getInputFileName();
             outputFileName = uiManager.getOutputFileName();
             sorterClass = uiManager.getSorterClass();
+            descSort = uiManager.getSortType();
             new FileSorter()
-                    .sort(inputFileName, outputFileName, sorterClass);
+                    .sort(inputFileName, outputFileName, sorterClass, descSort);
             System.out.println(SUCCESSFULLY_FINISHED);
         } catch (BadArgumentsException e) {
             if (e.getMessage() != null) {
