@@ -1,5 +1,6 @@
 package com.siberteam.vtungusov;
 
+import com.siberteam.vtungusov.sorter.Sorter;
 import com.siberteam.vtungusov.ui.BadArgumentsException;
 import com.siberteam.vtungusov.ui.UIManager;
 
@@ -14,7 +15,7 @@ public class Main {
         UIManager uiManager = new UIManager();
         String inputFileName;
         String outputFileName;
-        Class<?> sorterClass;
+        Class<? extends Sorter> sorterClass;
         try {
             uiManager.handleOptions(args);
             inputFileName = uiManager.getInputFileName();

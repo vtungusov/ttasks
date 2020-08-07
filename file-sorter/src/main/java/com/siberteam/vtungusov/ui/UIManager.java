@@ -1,5 +1,6 @@
 package com.siberteam.vtungusov.ui;
 
+import com.siberteam.vtungusov.sorter.Sorter;
 import org.apache.commons.cli.*;
 
 import java.util.Arrays;
@@ -73,22 +74,19 @@ public class UIManager {
         return value == null ? DEFAULT_SORTED_FILENAME : value;
     }
 
-    public Class<?> getSorterClass() throws BadArgumentsException {
+    public Class<? extends Sorter> getSorterClass() throws BadArgumentsException {
         try {
             String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
             Class<?> optionClass = Class.forName(optionValue);
-            if (validateSortClass(optionClass)) {
-                return optionClass;
+            boolean isSorter = Arrays.stream(optionClass.getInterfaces())
+                    .anyMatch(clazz -> clazz == Sorter.class);
+            if (isSorter) {
+                return (Class<? extends Sorter>) optionClass;
             } else {
                 throw new BadArgumentsException(INVALID_CLASS_ARGUMENT);
             }
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | ClassCastException e) {
             throw new BadArgumentsException(INVALID_CLASS_ARGUMENT);
         }
-    }
-
-    private boolean validateSortClass(Class<?> className) {
-        return Arrays.stream(SortType.values())
-                .anyMatch(v -> v.className == className);
     }
 }
