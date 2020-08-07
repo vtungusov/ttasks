@@ -1,5 +1,6 @@
 package com.siberteam.vtungusov;
 
+import com.siberteam.vtungusov.filesorter.FileSorter;
 import com.siberteam.vtungusov.sorter.Sorter;
 import com.siberteam.vtungusov.ui.BadArgumentsException;
 import com.siberteam.vtungusov.ui.UIManager;

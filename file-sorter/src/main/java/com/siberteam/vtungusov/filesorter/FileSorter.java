@@ -1,4 +1,4 @@
-package com.siberteam.vtungusov;
+package com.siberteam.vtungusov.filesorter;
 
 import com.siberteam.vtungusov.sorter.Sorter;
 
@@ -27,14 +27,16 @@ public class FileSorter {
     }
 
     private void saveToFile(String outputFileName, Stream<String> sortedWords) throws IOException {
-        List<String> stringList = sortedWords.collect(Collectors.toList());
+        List<String> stringList = sortedWords
+                .collect(Collectors.toList());
         Files.write(Paths.get(outputFileName), stringList);
     }
 
     private Stream<String> prepareAndSort(String inputFileName) throws IOException {
-        Stream<String> wordStream = Files.lines(Paths.get(inputFileName))
+        Stream<SortedPair> wordStream = Files.lines(Paths.get(inputFileName))
                 .map(line -> line.split(STRING_SPLIT_REGEX))
-                .flatMap(Arrays::stream);
+                .flatMap(Arrays::stream)
+                .map(s -> new SortedPair(s, s));
         return sorter.sort(wordStream);
     }
 
