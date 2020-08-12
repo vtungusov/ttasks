@@ -17,6 +17,7 @@ import static com.siberteam.vtungusov.util.FileUtil.checkOutputFile;
 
 public class FileSorter {
     private static final String STRING_SPLIT_REGEX = "[^a-zA-Z]";
+    //    private static final String STRING_SPLIT_REGEX1 = "()\\W+|\\d(?!\\w)|(?<!\\w)\\d";
     private Sorter sorter;
 
     public void sort(String inputFileName, String outputFileName, Class<? extends Sorter> sorterClass, boolean descSort) throws IOException {
@@ -33,10 +34,9 @@ public class FileSorter {
     }
 
     private Stream<String> prepareAndSort(String inputFileName, boolean descSort) throws IOException {
-        Stream<SortedPair> wordStream = Files.lines(Paths.get(inputFileName))
-                .map(line -> line.split(STRING_SPLIT_REGEX))
-                .flatMap(Arrays::stream)
-                .map(s -> new SortedPair(s, s));
+        Stream<String> wordStream = Files.lines(Paths.get(inputFileName))
+                .map(line -> line.trim().split(STRING_SPLIT_REGEX))
+                .flatMap(Arrays::stream);
         return sorter.sort(wordStream, descSort);
     }
 

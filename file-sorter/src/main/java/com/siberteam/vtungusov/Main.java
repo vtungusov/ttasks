@@ -14,16 +14,12 @@ public class Main {
 
     public static void main(String[] args) {
         UIManager uiManager = new UIManager();
-        String inputFileName;
-        String outputFileName;
-        Class<? extends Sorter> sorterClass;
-        boolean descSort;
         try {
             uiManager.handleOptions(args);
-            inputFileName = uiManager.getInputFileName();
-            outputFileName = uiManager.getOutputFileName();
-            sorterClass = uiManager.getSorterClass();
-            descSort = uiManager.getSortType();
+            String inputFileName = uiManager.getInputFileName();
+            String outputFileName = uiManager.getOutputFileName();
+            Class<? extends Sorter> sorterClass = uiManager.getSorterClass();
+            boolean descSort = uiManager.getSortType();
             new FileSorter()
                     .sort(inputFileName, outputFileName, sorterClass, descSort);
             System.out.println(SUCCESSFULLY_FINISHED);

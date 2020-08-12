@@ -1,30 +1,29 @@
 package com.siberteam.vtungusov.sorter;
 
-import com.siberteam.vtungusov.filesorter.SortedPair;
-import javafx.util.Pair;
+import com.siberteam.vtungusov.filesorter.PairEntry;
 
-import java.util.Comparator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FrequencySorter extends AbstractSorter {
     @Override
-    public Stream<String> sort(Stream<SortedPair> wordStream, boolean descSort) {
-        Map<String, Integer> frequency = wordStream
-                .collect(Collectors
-                        .toMap(Pair::getKey, v -> 1, Integer::sum));
+    public Stream<String> sort(Stream<String> wordStream, boolean descSort) {
+        Map<String, Integer> frequency = getFrequency(wordStream);
         return frequency.entrySet().stream()
-                .sorted(Map.Entry.comparingByValue(getIntComparator(descSort)))
+                .map(e -> new PairEntry<>(e.getKey(), e.getValue()))
+                .sorted(this.getComparator(descSort))
                 .map(this::toString);
     }
 
-    private Comparator<Integer> getIntComparator(boolean descSort) {
-        return descSort ? Comparator.reverseOrder() : Comparator.naturalOrder();
+    @Override
+    protected PairEntry<Integer> getSortFeature(String s) {
+        return null;
     }
 
-    private String toString(Map.Entry<String, Integer> entry) {
-        String word = entry.getKey();
-        return word + " (" + word + ")";
+    private Map<String, Integer> getFrequency(Stream<String> wordStream) {
+        return wordStream
+                .collect(Collectors
+                        .toMap(k -> k, v -> 1, Integer::sum));
     }
 }

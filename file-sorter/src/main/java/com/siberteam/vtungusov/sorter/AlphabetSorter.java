@@ -1,15 +1,11 @@
 package com.siberteam.vtungusov.sorter;
 
-import com.siberteam.vtungusov.filesorter.SortedPair;
-
-import java.util.stream.Stream;
+import com.siberteam.vtungusov.filesorter.PairEntry;
 
 public class AlphabetSorter extends AbstractSorter {
+
     @Override
-    public Stream<String> sort(Stream<SortedPair> pairStream, boolean descSort) {
-        return pairStream
-                .distinct()
-                .sorted(getComparator(descSort))
-                .map(SortedPair::toString);
+    protected PairEntry<String> getSortFeature(String s) {
+        return new PairEntry<>(s, s);
     }
 }
