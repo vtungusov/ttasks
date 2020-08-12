@@ -1,13 +1,14 @@
 package com.siberteam.vtungusov.sorter;
 
 import com.siberteam.vtungusov.filesorter.PairEntry;
+import com.siberteam.vtungusov.ui.BadArgumentsException;
 
 import java.util.Comparator;
 import java.util.stream.Stream;
 
 public abstract class AbstractSorter implements Sorter {
     @Override
-    public Stream<String> sort(Stream<String> stringStream, SortDirection direction) {
+    public Stream<String> sort(Stream<String> stringStream, SortDirection direction) throws BadArgumentsException {
         return stringStream
                 .map(this::getSortFeature)
                 .distinct()

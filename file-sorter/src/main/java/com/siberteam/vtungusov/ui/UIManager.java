@@ -1,7 +1,6 @@
 package com.siberteam.vtungusov.ui;
 
 import com.siberteam.vtungusov.sorter.SortDirection;
-import com.siberteam.vtungusov.sorter.Sorter;
 import org.apache.commons.cli.*;
 
 import java.util.Arrays;
@@ -13,7 +12,7 @@ public class UIManager {
     private static final String HELP_TEMPLATE = "java -jar [jar name] [options]";
     public static final String HEADER = "options:";
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
-    public static final String INVALID_CLASS_ARGUMENT = "Invalid arguments value for 'c' option. Class not supported.";
+
     private CommandLine cmd;
 
     public void handleOptions(String[] args) throws BadArgumentsException {
@@ -75,20 +74,12 @@ public class UIManager {
         return value == null ? DEFAULT_SORTED_FILENAME : value;
     }
 
-    public Class<? extends Sorter> getSorterClass() throws BadArgumentsException {
+    public Class<?> getSorterClass() throws BadArgumentsException {
         try {
             String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
-            Class<?> optionClass = Class.forName(optionValue);
-            boolean isSorter = Arrays.stream(optionClass.getInterfaces())
-                    .anyMatch(clazz -> clazz == Sorter.class);
-            Object instance = optionClass.newInstance();
-            if (instance instanceof Sorter) {
-                return (Class<? extends Sorter>) optionClass;
-            } else {
-                throw new BadArgumentsException(INVALID_CLASS_ARGUMENT);
-            }
-        } catch (ClassNotFoundException | ClassCastException | IllegalAccessException | InstantiationException e) {
-            throw new BadArgumentsException(INVALID_CLASS_ARGUMENT);
+            return Class.forName(optionValue);
+        } catch (ClassNotFoundException | ClassCastException e) {
+            throw new BadArgumentsException(INCORRECT_ARGUMENT + SORT_CLASS.shortName);
         }
     }
 

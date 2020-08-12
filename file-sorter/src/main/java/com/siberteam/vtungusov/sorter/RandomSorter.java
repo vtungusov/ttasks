@@ -1,14 +1,13 @@
 package com.siberteam.vtungusov.sorter;
 
 import com.siberteam.vtungusov.filesorter.PairEntry;
-import com.siberteam.vtungusov.util.SortReflection;
+import com.siberteam.vtungusov.ui.BadArgumentsException;
 
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
 
 public class RandomSorter extends AbstractSorter {
-    private static final String BASE_PACKAGE = "com.siberteam.vtungusov";
     private Sorter sorter;
 
     public RandomSorter() {
@@ -19,23 +18,21 @@ public class RandomSorter extends AbstractSorter {
     }
 
     @Override
-    public Stream<String> sort(Stream<String> stringStream, SortDirection direction) {
+    public Stream<String> sort(Stream<String> stringStream, SortDirection direction) throws BadArgumentsException {
         Sorter sorter = getSorter();
         return sorter.sort(stringStream, direction);
     }
 
-    private Sorter getSorter() {
+    private Sorter getSorter() throws BadArgumentsException {
         if (sorter == null) {
-            Set<Class<? extends AbstractSorter>> types = SortReflection.getSubTypes(AbstractSorter.class);
+            SorterFactory factory = new SorterFactory();
+            Set<Class<? extends AbstractSorter>> types = factory.getSorters();
             long sorterNumber = new Random().nextInt(types.size());
             Class<? extends AbstractSorter> sorterClass = types.stream()
                     .skip(sorterNumber)
                     .findFirst()
                     .orElse(AlphabetSorter.class);
-            try {
-                sorter = SortReflection.getInstance(sorterClass);
-            } catch (InstantiationException | IllegalAccessException ignored) {
-            }
+            sorter = factory.createSorter(sorterClass);
         }
         return sorter;
     }

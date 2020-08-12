@@ -1,5 +1,6 @@
 package com.siberteam.vtungusov.sorter;
 
+import com.siberteam.vtungusov.ui.BadArgumentsException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +26,7 @@ public class FrequencySorterTest {
     }
 
     @Test
-    public void testShouldSortByAsc() {
+    public void testShouldSortByAsc() throws BadArgumentsException {
         List<String> exp1 = Arrays.asList(
                 "ab (1)",
                 "cool (1)",
@@ -47,7 +48,7 @@ public class FrequencySorterTest {
     }
 
     @Test
-    public void testShouldSortByDesc() {
+    public void testShouldSortByDesc() throws BadArgumentsException {
         List<String> exp1 = Arrays.asList(
                 "lambada (2)",
                 "ab (1)",

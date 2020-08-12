@@ -1,5 +1,6 @@
 package com.siberteam.vtungusov.sorter;
 
+import com.siberteam.vtungusov.ui.BadArgumentsException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +26,7 @@ public class AlphabetReverseWordSorterTest {
     }
 
     @Test
-    public void testShouldSortByAsc() {
+    public void testShouldSortByAsc() throws BadArgumentsException {
         List<String> exp1 = Arrays.asList(
                 "lambada (adabmal)",
                 "ab (ba)",
@@ -47,7 +48,7 @@ public class AlphabetReverseWordSorterTest {
     }
 
     @Test
-    public void testShouldSortByDesc() {
+    public void testShouldSortByDesc() throws BadArgumentsException {
         List<String> exp1 = Arrays.asList(
                 "cool (looc)",
                 "ab (ba)",
