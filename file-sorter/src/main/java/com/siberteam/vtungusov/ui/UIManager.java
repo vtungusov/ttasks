@@ -1,5 +1,6 @@
 package com.siberteam.vtungusov.ui;
 
+import com.siberteam.vtungusov.sorter.SortDirection;
 import com.siberteam.vtungusov.sorter.Sorter;
 import org.apache.commons.cli.*;
 
@@ -91,7 +92,8 @@ public class UIManager {
         }
     }
 
-    public boolean getSortType() {
-        return cmd.hasOption(DESC_SORT_TYPE.shortName);
+    public SortDirection getSortType() {
+        return cmd.hasOption(DESC_SORT_TYPE.shortName) ?
+                SortDirection.DESC : SortDirection.ASC;
     }
 }

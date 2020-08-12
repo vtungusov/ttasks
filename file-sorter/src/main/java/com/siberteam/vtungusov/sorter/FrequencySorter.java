@@ -8,11 +8,11 @@ import java.util.stream.Stream;
 
 public class FrequencySorter extends AbstractSorter {
     @Override
-    public Stream<String> sort(Stream<String> wordStream, boolean descSort) {
+    public Stream<String> sort(Stream<String> wordStream, SortDirection direction) {
         Map<String, Integer> frequency = getFrequency(wordStream);
         return frequency.entrySet().stream()
                 .map(e -> new PairEntry<>(e.getKey(), e.getValue()))
-                .sorted(this.getComparator(descSort))
+                .sorted(this.getComparator(direction))
                 .map(this::toString);
     }
 

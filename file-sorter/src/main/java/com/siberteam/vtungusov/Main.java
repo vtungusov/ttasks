@@ -1,6 +1,7 @@
 package com.siberteam.vtungusov;
 
 import com.siberteam.vtungusov.filesorter.FileSorter;
+import com.siberteam.vtungusov.sorter.SortDirection;
 import com.siberteam.vtungusov.sorter.Sorter;
 import com.siberteam.vtungusov.ui.BadArgumentsException;
 import com.siberteam.vtungusov.ui.UIManager;
@@ -19,9 +20,9 @@ public class Main {
             String inputFileName = uiManager.getInputFileName();
             String outputFileName = uiManager.getOutputFileName();
             Class<? extends Sorter> sorterClass = uiManager.getSorterClass();
-            boolean descSort = uiManager.getSortType();
+            SortDirection direction = uiManager.getSortType();
             new FileSorter()
-                    .sort(inputFileName, outputFileName, sorterClass, descSort);
+                    .sort(inputFileName, outputFileName, sorterClass, direction);
             System.out.println(SUCCESSFULLY_FINISHED);
         } catch (BadArgumentsException e) {
             if (e.getMessage() != null) {

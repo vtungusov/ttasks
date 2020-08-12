@@ -37,9 +37,9 @@ public class FrequencySorterTest {
                 "18th (3)"
         );
 
-        List<String> act1 = sorter.sort(in1, false)
+        List<String> act1 = sorter.sort(in1, SortDirection.ASC)
                 .collect(Collectors.toList());
-        List<String> act2 = sorter.sort(in2, false)
+        List<String> act2 = sorter.sort(in2, SortDirection.ASC)
                 .collect(Collectors.toList());
 
         Assert.assertEquals(exp1, act1);
@@ -59,9 +59,9 @@ public class FrequencySorterTest {
                 "pop (1)"
         );
 
-        List<String> act1 = sorter.sort(in1, true)
+        List<String> act1 = sorter.sort(in1, SortDirection.DESC)
                 .collect(Collectors.toList());
-        List<String> act2 = sorter.sort(in2, true)
+        List<String> act2 = sorter.sort(in2, SortDirection.DESC)
                 .collect(Collectors.toList());
 
         Assert.assertEquals(exp1, act1);
