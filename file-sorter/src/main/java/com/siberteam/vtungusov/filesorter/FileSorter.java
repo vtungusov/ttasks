@@ -17,8 +17,7 @@ import static com.siberteam.vtungusov.util.FileUtil.checkInputFile;
 import static com.siberteam.vtungusov.util.FileUtil.checkOutputFile;
 
 public class FileSorter {
-    private static final String STRING_SPLIT_REGEX = "[^a-zA-Z]";
-    //    private static final String STRING_SPLIT_REGEX1 = "()\\W+|\\d(?!\\w)|(?<!\\w)\\d";
+    private static final String STRING_SPLIT_REGEX = "\\W";
 
     public void sort(String inputFileName, String outputFileName, Class<?> clazz, SortDirection direction) throws IOException, BadArgumentsException {
         validateFiles(inputFileName, outputFileName);
@@ -36,7 +35,15 @@ public class FileSorter {
     private Stream<String> prepareAndSort(String inputFileName, Class<?> clazz, SortDirection direction) throws IOException, BadArgumentsException {
         Stream<String> wordStream = Files.lines(Paths.get(inputFileName))
                 .map(line -> line.trim().split(STRING_SPLIT_REGEX))
-                .flatMap(Arrays::stream);
+                .flatMap(Arrays::stream)
+                .filter(s -> {
+                    boolean isEmpty = s.toCharArray().length < 1;
+                    boolean isDigit = s.chars()
+                            .allMatch(Character::isDigit);
+                    boolean isSpace = s.chars()
+                            .anyMatch(Character::isSpaceChar);
+                    return !isEmpty && !isDigit && !isSpace;
+                });
         Sorter sorter = initSorter(clazz);
         return sorter.sort(wordStream, direction);
     }
