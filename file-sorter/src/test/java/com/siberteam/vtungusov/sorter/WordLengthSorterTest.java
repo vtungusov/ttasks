@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AlphabetReverseWordSorterTest {
-    private final Sorter sorter = new AlphabetReverseWordSorter();
+public class WordLengthSorterTest {
+    private final Sorter sorter = new WordLengthSorter();
     private Stream<String> in1;
     private Stream<String> in2;
 
@@ -27,14 +27,14 @@ public class AlphabetReverseWordSorterTest {
     @Test
     public void testShouldSortByAsc() {
         List<String> exp1 = Arrays.asList(
-                "lambada (adabmal)",
-                "ab (ba)",
-                "cool (looc)"
+                "ab (2)",
+                "cool (4)",
+                "lambada (7)"
         );
         List<String> exp2 = Arrays.asList(
-                "18th (ht81)",
-                "pop (pop)",
-                "cft (tfc)"
+                "cft (3)",
+                "pop (3)",
+                "18th (4)"
         );
 
         List<String> act1 = sorter.sort(in1, false)
@@ -49,14 +49,14 @@ public class AlphabetReverseWordSorterTest {
     @Test
     public void testShouldSortByDesc() {
         List<String> exp1 = Arrays.asList(
-                "cool (looc)",
-                "ab (ba)",
-                "lambada (adabmal)"
+                "lambada (7)",
+                "cool (4)",
+                "ab (2)"
         );
         List<String> exp2 = Arrays.asList(
-                "cft (tfc)",
-                "pop (pop)",
-                "18th (ht81)"
+                "18th (4)",
+                "cft (3)",
+                "pop (3)"
         );
 
         List<String> act1 = sorter.sort(in1, true)
