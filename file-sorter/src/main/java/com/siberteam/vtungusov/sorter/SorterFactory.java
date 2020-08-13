@@ -2,8 +2,11 @@ package com.siberteam.vtungusov.sorter;
 
 import com.siberteam.vtungusov.ui.BadArgumentsException;
 import org.reflections.Reflections;
+import org.reflections.scanners.MethodParameterScanner;
 import org.reflections.scanners.SubTypesScanner;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -12,38 +15,36 @@ public class SorterFactory {
     private static final String BASE_PACKAGE = "com.siberteam.vtungusov";
     private static final String INVALID_CLASS_ARGUMENT = "Invalid arguments value for 'c' option. Class not supported.";
     private static final Set<Class<? extends AbstractSorter>> SORTERS;
+    private static final String DEFAULT_CONSTRUCTOR_EXPECTED = "Sorter class must contain default public constructor";
 
     static {
-        Reflections reflections = new Reflections(BASE_PACKAGE, new SubTypesScanner());
+        Reflections reflections = new Reflections(BASE_PACKAGE, new SubTypesScanner(), new MethodParameterScanner());
         SORTERS = reflections.getSubTypesOf(AbstractSorter.class).stream()
                 .filter(SorterFactory::isInstantiable)
                 .collect(Collectors.toSet());
     }
 
-    public Set<Class<? extends AbstractSorter>> getSorters() {
-        return SORTERS;
-    }
-
-    public Sorter createSorter(Class<?> clazz) throws BadArgumentsException {
-        validateSorter(clazz);
-        Sorter sorter = null;
+    public Sorter createSorter(Constructor<? extends Sorter> constructor) throws InstantiationException {
         try {
-            sorter = (Sorter) clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException ignore) {
+            return constructor.newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException ignore) {
+            throw new InstantiationException("Error due sorter creation");
         }
-        return sorter;
     }
 
-    private void validateSorter(Class<?> clazz) throws BadArgumentsException {
+    public Constructor<? extends Sorter> validateSorter(Class<?> clazz) throws BadArgumentsException {
         if (!SORTERS.contains(clazz)) {
             throw new BadArgumentsException(INVALID_CLASS_ARGUMENT);
+        }
+        try {
+            return (Constructor<? extends Sorter>) clazz.getConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new BadArgumentsException(DEFAULT_CONSTRUCTOR_EXPECTED);
         }
     }
 
     private static boolean isInstantiable(Class<?> clazz) {
-        return !clazz.isPrimitive()
-                && !Modifier.isAbstract(clazz.getModifiers())
-                && !clazz.isInterface()
-                && !clazz.isArray();
+        return !Modifier.isAbstract(clazz.getModifiers())
+                && !clazz.isInterface();
     }
 }

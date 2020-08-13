@@ -2,10 +2,12 @@ package com.siberteam.vtungusov;
 
 import com.siberteam.vtungusov.filesorter.FileSorter;
 import com.siberteam.vtungusov.sorter.SortDirection;
+import com.siberteam.vtungusov.sorter.Sorter;
 import com.siberteam.vtungusov.ui.BadArgumentsException;
 import com.siberteam.vtungusov.ui.UIManager;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 
 public class Main {
     private static final String SUCCESSFULLY_FINISHED = "Program successfully finished\nYou can look report" +
@@ -18,7 +20,7 @@ public class Main {
             uiManager.handleOptions(args);
             String inputFileName = uiManager.getInputFileName();
             String outputFileName = uiManager.getOutputFileName();
-            Class<?> sorterClass = uiManager.getSorterClass();
+            Constructor<? extends Sorter> sorterClass = uiManager.getSorterClass();
             SortDirection direction = uiManager.getSortType();
             new FileSorter()
                     .sort(inputFileName, outputFileName, sorterClass, direction);
@@ -33,6 +35,8 @@ public class Main {
             } else {
                 System.out.println(FILE_READING_ERROR);
             }
+        } catch (InstantiationException e) {
+            System.out.println(e.getMessage());
         }
     }
 }

@@ -3,9 +3,9 @@ package com.siberteam.vtungusov.filesorter;
 import com.siberteam.vtungusov.sorter.SortDirection;
 import com.siberteam.vtungusov.sorter.Sorter;
 import com.siberteam.vtungusov.sorter.SorterFactory;
-import com.siberteam.vtungusov.ui.BadArgumentsException;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -20,10 +20,11 @@ import static com.siberteam.vtungusov.util.FileUtil.checkOutputFile;
 public class FileSorter {
     private static final String STRING_SPLIT_REGEX = "[\\W_]";
 
-    public void sort(String inputFileName, String outputFileName, Class<?> clazz, SortDirection direction) throws IOException, BadArgumentsException {
+    public void sort(String inputFileName, String outputFileName, Constructor<? extends Sorter> constructor, SortDirection direction)
+            throws IOException, InstantiationException {
         validateFiles(inputFileName, outputFileName);
-        initSorter(clazz);
-        Stream<String> sortedWords = prepareAndSort(inputFileName, clazz, direction);
+        initSorter(constructor);
+        Stream<String> sortedWords = prepareAndSort(inputFileName, constructor, direction);
         saveToFile(outputFileName, sortedWords);
     }
 
@@ -33,13 +34,14 @@ public class FileSorter {
         Files.write(Paths.get(outputFileName), stringList);
     }
 
-    private Stream<String> prepareAndSort(String inputFileName, Class<?> clazz, SortDirection direction) throws IOException, BadArgumentsException {
+    private Stream<String> prepareAndSort(String inputFileName, Constructor<? extends Sorter> constructor, SortDirection direction)
+            throws IOException, InstantiationException {
         Stream<String> wordStream = Files.lines(Paths.get(inputFileName))
                 .map(line -> line.trim().split(STRING_SPLIT_REGEX))
                 .flatMap(Arrays::stream)
                 .filter(clearWaste())
                 .map(String::toLowerCase);
-        Sorter sorter = initSorter(clazz);
+        Sorter sorter = initSorter(constructor);
         return sorter.sort(wordStream, direction);
     }
 
@@ -52,9 +54,9 @@ public class FileSorter {
         };
     }
 
-    private Sorter initSorter(Class<?> sorterClass) throws BadArgumentsException {
+    private Sorter initSorter(Constructor<? extends Sorter> constructor) throws InstantiationException {
         SorterFactory factory = new SorterFactory();
-        return factory.createSorter(sorterClass);
+        return factory.createSorter(constructor);
     }
 
     private void validateFiles(String inputFileName, String outputFileName) throws IOException {

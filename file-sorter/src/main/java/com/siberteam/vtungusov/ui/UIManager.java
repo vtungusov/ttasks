@@ -1,8 +1,11 @@
 package com.siberteam.vtungusov.ui;
 
 import com.siberteam.vtungusov.sorter.SortDirection;
+import com.siberteam.vtungusov.sorter.Sorter;
+import com.siberteam.vtungusov.sorter.SorterFactory;
 import org.apache.commons.cli.*;
 
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 import static com.siberteam.vtungusov.ui.OptionInfo.*;
@@ -74,10 +77,12 @@ public class UIManager {
         return value == null ? DEFAULT_SORTED_FILENAME : value;
     }
 
-    public Class<?> getSorterClass() throws BadArgumentsException {
+    public Constructor<? extends Sorter> getSorterClass() throws BadArgumentsException {
         try {
             String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
-            return Class.forName(optionValue);
+            Class<?> sorterClass = Class.forName(optionValue);
+            return new SorterFactory()
+                    .validateSorter(sorterClass);
         } catch (ClassNotFoundException | ClassCastException e) {
             throw new BadArgumentsException(INCORRECT_ARGUMENT + SORT_CLASS.shortName);
         }
