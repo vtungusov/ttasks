@@ -17,7 +17,7 @@ public class FrequencySorter extends AbstractSorter<Integer> {
     }
 
     @Override
-    protected PairEntry<Integer> getSortFeature(String s) {
+    protected Integer getSortFeature(String s) {
         throw new UnsupportedOperationException();
     }
 

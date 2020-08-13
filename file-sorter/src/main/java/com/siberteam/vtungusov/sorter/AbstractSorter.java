@@ -9,7 +9,7 @@ public abstract class AbstractSorter<T extends Comparable<T>> implements Sorter 
     @Override
     public Stream<String> sort(Stream<String> stringStream, SortDirection direction) {
         return stringStream
-                .map(this::getSortFeature)
+                .map(this::getPairEntry)
                 .distinct()
                 .sorted(getComparator(direction))
                 .map(this::toString);
@@ -27,5 +27,10 @@ public abstract class AbstractSorter<T extends Comparable<T>> implements Sorter 
         return comparator.thenComparing(Comparator.naturalOrder());
     }
 
-    protected abstract PairEntry<T> getSortFeature(String s);
+    private PairEntry<T> getPairEntry(String s) {
+        T feature = getSortFeature(s);
+        return new PairEntry<>(s, feature);
+    }
+
+    protected abstract T getSortFeature(String s);
 }

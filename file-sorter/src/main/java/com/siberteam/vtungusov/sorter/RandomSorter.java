@@ -1,7 +1,5 @@
 package com.siberteam.vtungusov.sorter;
 
-import com.siberteam.vtungusov.filesorter.PairEntry;
-
 import java.util.Random;
 
 public class RandomSorter extends AbstractSorter<Double> {
@@ -17,11 +15,11 @@ public class RandomSorter extends AbstractSorter<Double> {
     }
 
     @Override
-    protected PairEntry<Double> getSortFeature(String s) {
+    protected Double getSortFeature(String s) {
         if (mockRandom) {
-            return new PairEntry<>(s, 0D);
+            return 0D;
         } else {
-            return new PairEntry<>(s, random.nextDouble() * 10);
+            return random.nextDouble() * 10;
         }
     }
 }
