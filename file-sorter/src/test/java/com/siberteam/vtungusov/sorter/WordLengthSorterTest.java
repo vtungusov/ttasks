@@ -25,46 +25,58 @@ public class WordLengthSorterTest {
     }
 
     @Test
-    public void shouldSortByAsc() {
+    public void shouldSortByAscIn1() {
         List<String> exp1 = Arrays.asList(
                 "ab (2)",
                 "cool (4)",
                 "lambada (7)"
         );
+
+        List<String> act1 = sorter.sort(in1, SortDirection.ASC)
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(exp1, act1);
+    }
+
+    @Test
+    public void shouldSortByAscIn2() {
         List<String> exp2 = Arrays.asList(
                 "cft (3)",
                 "pop (3)",
                 "18th (4)"
         );
 
-        List<String> act1 = sorter.sort(in1, SortDirection.ASC)
-                .collect(Collectors.toList());
         List<String> act2 = sorter.sort(in2, SortDirection.ASC)
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(exp1, act1);
         Assert.assertEquals(exp2, act2);
     }
 
     @Test
-    public void shouldSortByDesc() {
+    public void shouldSortByDescIn1() {
         List<String> exp1 = Arrays.asList(
                 "lambada (7)",
                 "cool (4)",
                 "ab (2)"
         );
+
+        List<String> act1 = sorter.sort(in1, SortDirection.DESC)
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(exp1, act1);
+    }
+
+    @Test
+    public void shouldSortByDescIn2() {
         List<String> exp2 = Arrays.asList(
                 "18th (4)",
                 "cft (3)",
                 "pop (3)"
         );
 
-        List<String> act1 = sorter.sort(in1, SortDirection.DESC)
-                .collect(Collectors.toList());
         List<String> act2 = sorter.sort(in2, SortDirection.DESC)
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(exp1, act1);
         Assert.assertEquals(exp2, act2);
     }
 }

@@ -25,46 +25,58 @@ public class FrequencySorterTest {
     }
 
     @Test
-    public void shouldSortByAsc() {
+    public void shouldSortByAscIn1() {
         List<String> exp1 = Arrays.asList(
                 "ab (1)",
                 "cool (1)",
                 "lambada (2)"
         );
+
+        List<String> act1 = sorter.sort(in1, SortDirection.ASC)
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(exp1, act1);
+    }
+
+    @Test
+    public void shouldSortByAscIn2() {
         List<String> exp2 = Arrays.asList(
                 "pop (1)",
                 "cft (2)",
                 "18th (3)"
         );
 
-        List<String> act1 = sorter.sort(in1, SortDirection.ASC)
-                .collect(Collectors.toList());
         List<String> act2 = sorter.sort(in2, SortDirection.ASC)
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(exp1, act1);
         Assert.assertEquals(exp2, act2);
     }
 
     @Test
-    public void shouldSortByDesc() {
+    public void shouldSortByDescIn1() {
         List<String> exp1 = Arrays.asList(
                 "lambada (2)",
                 "ab (1)",
                 "cool (1)"
         );
+
+        List<String> act1 = sorter.sort(in1, SortDirection.DESC)
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(exp1, act1);
+    }
+
+    @Test
+    public void shouldSortByDescIn2() {
         List<String> exp2 = Arrays.asList(
                 "18th (3)",
                 "cft (2)",
                 "pop (1)"
         );
 
-        List<String> act1 = sorter.sort(in1, SortDirection.DESC)
-                .collect(Collectors.toList());
         List<String> act2 = sorter.sort(in2, SortDirection.DESC)
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(exp1, act1);
         Assert.assertEquals(exp2, act2);
     }
 }

@@ -25,46 +25,58 @@ public class AlphabetSorterTest {
     }
 
     @Test
-    public void shouldSortByAsc() {
+    public void shouldSortByAscIn1() {
         List<String> exp1 = Arrays.asList(
                 "ab (ab)",
                 "cool (cool)",
                 "lambada (lambada)"
         );
+
+        List<String> act1 = sorter.sort(in1, SortDirection.ASC)
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(exp1, act1);
+    }
+
+    @Test
+    public void shouldSortByAscIn2() {
         List<String> exp2 = Arrays.asList(
                 "18th (18th)",
                 "cft (cft)",
                 "pop (pop)"
         );
 
-        List<String> act1 = sorter.sort(in1, SortDirection.ASC)
-                .collect(Collectors.toList());
         List<String> act2 = sorter.sort(in2, SortDirection.ASC)
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(exp1, act1);
         Assert.assertEquals(exp2, act2);
     }
 
     @Test
-    public void shouldSortByDesc() {
+    public void shouldSortByDescIn1() {
         List<String> exp1 = Arrays.asList(
                 "lambada (lambada)",
                 "cool (cool)",
                 "ab (ab)"
         );
+
+        List<String> act1 = sorter.sort(in1, SortDirection.DESC)
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(exp1, act1);
+    }
+
+    @Test
+    public void shouldSortByDescIn2() {
         List<String> exp2 = Arrays.asList(
                 "pop (pop)",
                 "cft (cft)",
                 "18th (18th)"
         );
 
-        List<String> act1 = sorter.sort(in1, SortDirection.DESC)
-                .collect(Collectors.toList());
         List<String> act2 = sorter.sort(in2, SortDirection.DESC)
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(exp1, act1);
         Assert.assertEquals(exp2, act2);
     }
 }

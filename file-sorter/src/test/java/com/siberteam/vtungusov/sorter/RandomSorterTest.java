@@ -25,24 +25,30 @@ public class RandomSorterTest {
     }
 
     @Test
-    public void shouldSort() {
+    public void shouldSortIn1() {
         List<String> exp1 = Arrays.asList(
                 "ab (0.0)",
                 "lambada (0.0)",
                 "cool (0.0)"
         );
+
+        List<String> act1 = mockedSorter.sort(in1, SortDirection.ASC)
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(exp1, act1);
+    }
+
+    @Test
+    public void shouldSortIn2() {
         List<String> exp2 = Arrays.asList(
                 "cft (0.0)",
                 "18th (0.0)",
                 "pop (0.0)"
         );
 
-        List<String> act1 = mockedSorter.sort(in1, SortDirection.ASC)
-                .collect(Collectors.toList());
         List<String> act2 = mockedSorter.sort(in2, SortDirection.ASC)
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(exp1, act1);
         Assert.assertEquals(exp2, act2);
     }
 }
