@@ -84,7 +84,7 @@ public class UIManager {
     }
 
     public SortDirection getSortType() {
-        return cmd.hasOption(DESC_SORT_TYPE.shortName) ?
+        return cmd.hasOption(SORT_TYPE.shortName) ?
                 SortDirection.DESC : SortDirection.ASC;
     }
 }

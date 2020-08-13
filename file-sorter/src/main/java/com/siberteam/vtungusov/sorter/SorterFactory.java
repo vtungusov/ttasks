@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class SorterFactory {
     private static final String BASE_PACKAGE = "com.siberteam.vtungusov";
-    public static final String INVALID_CLASS_ARGUMENT = "Invalid arguments value for 'c' option. Class not supported.";
+    private static final String INVALID_CLASS_ARGUMENT = "Invalid arguments value for 'c' option. Class not supported.";
     private static final Set<Class<? extends AbstractSorter>> SORTERS;
 
     static {

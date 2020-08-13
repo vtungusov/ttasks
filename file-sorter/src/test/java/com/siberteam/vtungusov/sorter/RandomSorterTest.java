@@ -1,6 +1,5 @@
 package com.siberteam.vtungusov.sorter;
 
-import com.siberteam.vtungusov.ui.BadArgumentsException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,8 +10,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RandomSorterTest {
-    private final Sorter fSorter = new RandomSorter(new FrequencySorter());
-    private final Sorter abrSorter = new RandomSorter(new AlphabetReverseWordSorter());
+    private final Sorter ascSorter = new RandomSorter(SortDirection.ASC);
+    private final Sorter descSorter = new RandomSorter(SortDirection.DESC);
     private Stream<String> in1;
     private Stream<String> in2;
 
@@ -27,21 +26,21 @@ public class RandomSorterTest {
     }
 
     @Test
-    public void testShouldSortByAsc() throws BadArgumentsException {
+    public void shouldSortByAsc() {
         List<String> exp1 = Arrays.asList(
-                "ab (1)",
-                "cool (1)",
-                "lambada (2)"
+                "ab (ab)",
+                "cool (cool)",
+                "lambada (lambada)"
         );
         List<String> exp2 = Arrays.asList(
-                "pop (1)",
-                "cft (2)",
-                "18th (3)"
+                "18th (18th)",
+                "cft (cft)",
+                "pop (pop)"
         );
 
-        List<String> act1 = fSorter.sort(in1, SortDirection.ASC)
+        List<String> act1 = ascSorter.sort(in1, SortDirection.ASC)
                 .collect(Collectors.toList());
-        List<String> act2 = fSorter.sort(in2, SortDirection.ASC)
+        List<String> act2 = ascSorter.sort(in2, SortDirection.ASC)
                 .collect(Collectors.toList());
 
         Assert.assertEquals(exp1, act1);
@@ -49,65 +48,21 @@ public class RandomSorterTest {
     }
 
     @Test
-    public void testShouldSortByDesc() throws BadArgumentsException {
+    public void shouldSortByDesc() {
         List<String> exp1 = Arrays.asList(
-                "lambada (2)",
-                "ab (1)",
-                "cool (1)"
+                "lambada (lambada)",
+                "cool (cool)",
+                "ab (ab)"
         );
         List<String> exp2 = Arrays.asList(
-                "18th (3)",
-                "cft (2)",
-                "pop (1)"
-        );
-
-        List<String> act1 = fSorter.sort(in1, SortDirection.DESC)
-                .collect(Collectors.toList());
-        List<String> act2 = fSorter.sort(in2, SortDirection.DESC)
-                .collect(Collectors.toList());
-
-        Assert.assertEquals(exp1, act1);
-        Assert.assertEquals(exp2, act2);
-    }
-
-    @Test
-    public void shouldAlphabetReverseWordSortByAsc() throws BadArgumentsException {
-        List<String> exp1 = Arrays.asList(
-                "lambada (adabmal)",
-                "ab (ba)",
-                "cool (looc)"
-        );
-        List<String> exp2 = Arrays.asList(
-                "18th (ht81)",
                 "pop (pop)",
-                "cft (tfc)"
+                "cft (cft)",
+                "18th (18th)"
         );
 
-        List<String> act1 = abrSorter.sort(in1, SortDirection.ASC)
+        List<String> act1 = descSorter.sort(in1, SortDirection.DESC)
                 .collect(Collectors.toList());
-        List<String> act2 = abrSorter.sort(in2, SortDirection.ASC)
-                .collect(Collectors.toList());
-
-        Assert.assertEquals(exp1, act1);
-        Assert.assertEquals(exp2, act2);
-    }
-
-    @Test
-    public void shouldAlphabetReverseWordSortByDesc() throws BadArgumentsException {
-        List<String> exp1 = Arrays.asList(
-                "cool (looc)",
-                "ab (ba)",
-                "lambada (adabmal)"
-        );
-        List<String> exp2 = Arrays.asList(
-                "cft (tfc)",
-                "pop (pop)",
-                "18th (ht81)"
-        );
-
-        List<String> act1 = abrSorter.sort(in1, SortDirection.DESC)
-                .collect(Collectors.toList());
-        List<String> act2 = abrSorter.sort(in2, SortDirection.DESC)
+        List<String> act2 = descSorter.sort(in2, SortDirection.DESC)
                 .collect(Collectors.toList());
 
         Assert.assertEquals(exp1, act1);

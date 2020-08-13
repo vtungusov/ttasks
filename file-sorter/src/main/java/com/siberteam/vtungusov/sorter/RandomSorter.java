@@ -1,44 +1,27 @@
 package com.siberteam.vtungusov.sorter;
 
 import com.siberteam.vtungusov.filesorter.PairEntry;
-import com.siberteam.vtungusov.ui.BadArgumentsException;
 
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Stream;
+import java.util.Comparator;
 
 public class RandomSorter extends AbstractSorter {
-    private Sorter sorter;
+    private SortDirection testDirection;
 
     public RandomSorter() {
     }
 
-    public RandomSorter(Sorter sorter) {
-        this.sorter = sorter;
+    public RandomSorter(SortDirection testDirection) {
+        this.testDirection = testDirection;
     }
 
     @Override
-    public Stream<String> sort(Stream<String> stringStream, SortDirection direction) throws BadArgumentsException {
-        Sorter sorter = getSorter();
-        return sorter.sort(stringStream, direction);
-    }
-
-    private Sorter getSorter() throws BadArgumentsException {
-        if (sorter == null) {
-            SorterFactory factory = new SorterFactory();
-            Set<Class<? extends AbstractSorter>> types = factory.getSorters();
-            long sorterNumber = new Random().nextInt(types.size());
-            Class<? extends AbstractSorter> sorterClass = types.stream()
-                    .skip(sorterNumber)
-                    .findFirst()
-                    .orElse(AlphabetSorter.class);
-            sorter = factory.createSorter(sorterClass);
-        }
-        return sorter;
+    protected <T extends PairEntry<?>> Comparator<T> getComparator(SortDirection direction) {
+        direction = testDirection == null ? direction : testDirection;
+        return super.getComparator(direction);
     }
 
     @Override
-    protected PairEntry<? extends Comparable<?>> getSortFeature(String s) {
-        return null;
+    protected PairEntry<String> getSortFeature(String s) {
+        return new PairEntry<>(s, s);
     }
 }
