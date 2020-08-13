@@ -12,7 +12,7 @@ public class FrequencySorter extends AbstractSorter {
         Map<String, Integer> frequency = getFrequency(wordStream);
         return frequency.entrySet().stream()
                 .map(e -> new PairEntry<>(e.getKey(), e.getValue()))
-                .sorted(this.getComparator(direction))
+                .sorted(this.getComparator(direction).thenComparing(PairEntry::getKey))
                 .map(this::toString);
     }
 

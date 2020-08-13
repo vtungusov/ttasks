@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,16 +37,21 @@ public class FileSorter {
         Stream<String> wordStream = Files.lines(Paths.get(inputFileName))
                 .map(line -> line.trim().split(STRING_SPLIT_REGEX))
                 .flatMap(Arrays::stream)
-                .filter(s -> {
-                    boolean isEmpty = s.toCharArray().length < 1;
-                    boolean isDigit = s.chars()
-                            .allMatch(Character::isDigit);
-                    boolean isSpace = s.chars()
-                            .anyMatch(Character::isSpaceChar);
-                    return !isEmpty && !isDigit && !isSpace;
-                });
+                .filter(clearWaste())
+                .map(String::toLowerCase);
         Sorter sorter = initSorter(clazz);
         return sorter.sort(wordStream, direction);
+    }
+
+    private Predicate<String> clearWaste() {
+        return s -> {
+            boolean isEmpty = s.toCharArray().length < 1;
+            boolean isDigit = s.chars()
+                    .allMatch(Character::isDigit);
+            boolean isSpace = s.chars()
+                    .anyMatch(Character::isSpaceChar);
+            return !isEmpty && !isDigit && !isSpace;
+        };
     }
 
     private Sorter initSorter(Class<?> sorterClass) throws BadArgumentsException {
