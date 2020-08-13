@@ -18,7 +18,7 @@ public class FrequencySorter extends AbstractSorter {
 
     @Override
     protected PairEntry<Integer> getSortFeature(String s) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     private Map<String, Integer> getFrequency(Stream<String> wordStream) {
