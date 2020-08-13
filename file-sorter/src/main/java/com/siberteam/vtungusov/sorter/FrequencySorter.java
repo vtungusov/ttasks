@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FrequencySorter extends AbstractSorter {
+public class FrequencySorter extends AbstractSorter<Integer> {
     @Override
     public Stream<String> sort(Stream<String> wordStream, SortDirection direction) {
         Map<String, Integer> frequency = getFrequency(wordStream);

@@ -4,7 +4,7 @@ import com.siberteam.vtungusov.filesorter.PairEntry;
 
 import java.util.Random;
 
-public class RandomSorter extends AbstractSorter {
+public class RandomSorter extends AbstractSorter<Double> {
     private static Random random;
     private boolean mockRandom;
 
@@ -23,6 +23,5 @@ public class RandomSorter extends AbstractSorter {
         } else {
             return new PairEntry<>(s, random.nextDouble() * 10);
         }
-
     }
 }

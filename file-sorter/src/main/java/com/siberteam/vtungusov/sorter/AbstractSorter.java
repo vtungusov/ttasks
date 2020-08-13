@@ -5,7 +5,7 @@ import com.siberteam.vtungusov.filesorter.PairEntry;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-public abstract class AbstractSorter implements Sorter {
+public abstract class AbstractSorter<T extends Comparable<T>> implements Sorter {
     @Override
     public Stream<String> sort(Stream<String> stringStream, SortDirection direction) {
         return stringStream
@@ -15,17 +15,17 @@ public abstract class AbstractSorter implements Sorter {
                 .map(this::toString);
     }
 
-    protected String toString(PairEntry<? extends Comparable<?>> entry) {
+    protected String toString(PairEntry<T> entry) {
         return entry.getKey() + " (" + entry.getValue() + ")";
     }
 
-    protected <T extends PairEntry<?>> Comparator<T> getComparator(SortDirection direction) {
-        Comparator<T> comparator = Comparator.naturalOrder();
+    protected <U extends PairEntry<T>> Comparator<U> getComparator(SortDirection direction) {
+        Comparator<U> comparator = Comparator.naturalOrder();
         if (direction == SortDirection.DESC) {
             comparator = Comparator.reverseOrder();
         }
         return comparator.thenComparing(Comparator.naturalOrder());
     }
 
-    protected abstract PairEntry<? extends Comparable<?>> getSortFeature(String s);
+    protected abstract PairEntry<T> getSortFeature(String s);
 }
