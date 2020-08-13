@@ -45,12 +45,10 @@ public class FileSorter {
 
     private Predicate<String> clearWaste() {
         return s -> {
-            boolean isEmpty = s.toCharArray().length < 1;
-            boolean isDigit = s.chars()
+            boolean isEmpty = s.isEmpty();
+            boolean isNumber = s.chars()
                     .allMatch(Character::isDigit);
-            boolean isSpace = s.chars()
-                    .anyMatch(Character::isSpaceChar);
-            return !isEmpty && !isDigit && !isSpace;
+            return !isEmpty && !isNumber;
         };
     }
 
