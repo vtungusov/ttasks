@@ -39,19 +39,20 @@ public class FileSorter {
         Stream<String> wordStream = Files.lines(Paths.get(inputFileName))
                 .map(line -> line.trim().split(STRING_SPLIT_REGEX))
                 .flatMap(Arrays::stream)
-                .filter(clearWaste())
+                .filter(notEmpty())
+                .filter(notNumber())
                 .map(String::toLowerCase);
         Sorter sorter = initSorter(constructor);
         return sorter.sort(wordStream, direction);
     }
 
-    private Predicate<String> clearWaste() {
-        return s -> {
-            boolean isEmpty = s.isEmpty();
-            boolean isNumber = s.chars()
-                    .allMatch(Character::isDigit);
-            return !isEmpty && !isNumber;
-        };
+    private Predicate<String> notEmpty() {
+        return s -> !s.isEmpty();
+    }
+
+    private Predicate<String> notNumber() {
+        return s -> !(s.chars()
+                .allMatch(Character::isDigit));
     }
 
     private Sorter initSorter(Constructor<? extends Sorter> constructor) throws InstantiationException {
