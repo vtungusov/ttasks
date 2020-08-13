@@ -57,7 +57,7 @@ public class FileSorter {
 
     private Sorter initSorter(Constructor<? extends Sorter> constructor) throws InstantiationException {
         SorterFactory factory = new SorterFactory();
-        return factory.createSorter(constructor);
+        return factory.getSorter(constructor);
     }
 
     private void validateFiles(String inputFileName, String outputFileName) throws IOException {

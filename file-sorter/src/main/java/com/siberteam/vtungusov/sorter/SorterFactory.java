@@ -16,6 +16,7 @@ public class SorterFactory {
     private static final String INVALID_CLASS_ARGUMENT = "Invalid arguments value for 'c' option. Class not supported.";
     private static final Set<Class<? extends Sorter>> SORTERS;
     private static final String DEFAULT_CONSTRUCTOR_EXPECTED = "Sorter class must contain default public constructor";
+    private static final String CREATION_ERROR = "Error due sorter creation";
 
     static {
         Reflections reflections = new Reflections(BASE_PACKAGE, new SubTypesScanner(), new MethodParameterScanner());
@@ -24,23 +25,27 @@ public class SorterFactory {
                 .collect(Collectors.toSet());
     }
 
-    public Sorter createSorter(Constructor<? extends Sorter> constructor) throws InstantiationException {
+    public Sorter getSorter(Constructor<? extends Sorter> constructor) throws InstantiationException {
         try {
             return constructor.newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException ignore) {
-            throw new InstantiationException("Error due sorter creation");
+            throw new InstantiationException(CREATION_ERROR);
         }
     }
 
-    public Constructor<? extends Sorter> validateSorter(Class<?> clazz) throws BadArgumentsException {
-        if (!SORTERS.contains(clazz)) {
-            throw new BadArgumentsException(INVALID_CLASS_ARGUMENT);
-        }
+    public Constructor<? extends Sorter> getConstructor(String clazz) throws BadArgumentsException {
+        Class<? extends Sorter> optClass = validateAndGetClass(clazz);
         try {
-            return (Constructor<? extends Sorter>) clazz.getConstructor();
+            return optClass.getConstructor();
         } catch (NoSuchMethodException e) {
             throw new BadArgumentsException(DEFAULT_CONSTRUCTOR_EXPECTED);
         }
+    }
+
+    private Class<? extends Sorter> validateAndGetClass(String clazz) throws BadArgumentsException {
+        return SORTERS.stream()
+                .filter(aClass -> aClass.getName().equals(clazz))
+                .findFirst().orElseThrow(() -> new BadArgumentsException(INVALID_CLASS_ARGUMENT));
     }
 
     private static boolean isInstantiable(Class<?> clazz) {

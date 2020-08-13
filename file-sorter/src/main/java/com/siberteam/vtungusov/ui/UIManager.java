@@ -78,14 +78,9 @@ public class UIManager {
     }
 
     public Constructor<? extends Sorter> getSorterClass() throws BadArgumentsException {
-        try {
-            String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
-            Class<?> sorterClass = Class.forName(optionValue);
-            return new SorterFactory()
-                    .validateSorter(sorterClass);
-        } catch (ClassNotFoundException | ClassCastException e) {
-            throw new BadArgumentsException(INCORRECT_ARGUMENT + SORT_CLASS.shortName);
-        }
+        String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
+        return new SorterFactory()
+                .getConstructor(optionValue);
     }
 
     public SortDirection getSortType() {
