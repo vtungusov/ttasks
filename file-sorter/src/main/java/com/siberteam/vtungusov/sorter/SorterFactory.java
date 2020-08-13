@@ -14,12 +14,12 @@ import java.util.stream.Collectors;
 public class SorterFactory {
     private static final String BASE_PACKAGE = "com.siberteam.vtungusov";
     private static final String INVALID_CLASS_ARGUMENT = "Invalid arguments value for 'c' option. Class not supported.";
-    private static final Set<Class<? extends AbstractSorter>> SORTERS;
+    private static final Set<Class<? extends Sorter>> SORTERS;
     private static final String DEFAULT_CONSTRUCTOR_EXPECTED = "Sorter class must contain default public constructor";
 
     static {
         Reflections reflections = new Reflections(BASE_PACKAGE, new SubTypesScanner(), new MethodParameterScanner());
-        SORTERS = reflections.getSubTypesOf(AbstractSorter.class).stream()
+        SORTERS = reflections.getSubTypesOf(Sorter.class).stream()
                 .filter(SorterFactory::isInstantiable)
                 .collect(Collectors.toSet());
     }
