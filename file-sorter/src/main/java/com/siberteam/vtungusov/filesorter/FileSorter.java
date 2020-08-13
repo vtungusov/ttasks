@@ -18,7 +18,7 @@ import static com.siberteam.vtungusov.util.FileUtil.checkInputFile;
 import static com.siberteam.vtungusov.util.FileUtil.checkOutputFile;
 
 public class FileSorter {
-    private static final String STRING_SPLIT_REGEX = "\\W";
+    private static final String STRING_SPLIT_REGEX = "[\\W_]";
 
     public void sort(String inputFileName, String outputFileName, Class<?> clazz, SortDirection direction) throws IOException, BadArgumentsException {
         validateFiles(inputFileName, outputFileName);
