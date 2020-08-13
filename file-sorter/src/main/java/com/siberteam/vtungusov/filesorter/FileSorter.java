@@ -19,6 +19,11 @@ import static com.siberteam.vtungusov.util.FileUtil.checkOutputFile;
 
 public class FileSorter {
     private static final String STRING_SPLIT_REGEX = "[\\W_&&[^ЁёА-я]]";
+    private final SorterFactory sorterFactory;
+
+    public FileSorter(SorterFactory sorterFactory) {
+        this.sorterFactory = sorterFactory;
+    }
 
     public void sort(String inputFileName, String outputFileName, Constructor<? extends Sorter> constructor, SortDirection direction)
             throws IOException, InstantiationException {
@@ -56,8 +61,7 @@ public class FileSorter {
     }
 
     private Sorter initSorter(Constructor<? extends Sorter> constructor) throws InstantiationException {
-        SorterFactory factory = new SorterFactory();
-        return factory.getSorter(constructor);
+        return sorterFactory.getSorter(constructor);
     }
 
     private void validateFiles(String inputFileName, String outputFileName) throws IOException {

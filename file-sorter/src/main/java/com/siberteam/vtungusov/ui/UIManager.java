@@ -16,7 +16,12 @@ public class UIManager {
     public static final String HEADER = "options:";
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
 
+    private SorterFactory sorterFactory;
     private CommandLine cmd;
+
+    public UIManager(SorterFactory sorterFactory) {
+        this.sorterFactory = sorterFactory;
+    }
 
     public void handleOptions(String[] args) throws BadArgumentsException {
         if (!validateOptions(args)) {
@@ -79,8 +84,7 @@ public class UIManager {
 
     public Constructor<? extends Sorter> getSorterClass() throws BadArgumentsException {
         String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
-        return new SorterFactory()
-                .getConstructor(optionValue);
+        return sorterFactory.getConstructor(optionValue);
     }
 
     public SortDirection getSortType() {
