@@ -24,7 +24,7 @@ public abstract class AbstractSorter implements Sorter {
         if (direction == SortDirection.DESC) {
             comparator = Comparator.reverseOrder();
         }
-        return comparator;
+        return comparator.thenComparing(Comparator.naturalOrder());
     }
 
     protected abstract PairEntry<? extends Comparable<?>> getSortFeature(String s);
