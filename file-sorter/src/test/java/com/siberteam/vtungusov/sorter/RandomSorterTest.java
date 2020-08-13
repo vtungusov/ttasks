@@ -3,6 +3,7 @@ package com.siberteam.vtungusov.sorter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RandomSorterTest {
-    private final Sorter mockedSorter = new RandomSorter(true);
+    private final RandomSorter mockSorter = Mockito.spy(RandomSorter.class);
     private Stream<String> in1;
     private Stream<String> in2;
 
@@ -32,7 +33,8 @@ public class RandomSorterTest {
                 "cool (0.0)"
         );
 
-        List<String> act1 = mockedSorter.sort(in1, SortDirection.ASC)
+        Mockito.when(mockSorter.getSortFeature(Mockito.anyString())).thenReturn(0d);
+        List<String> act1 = mockSorter.sort(in1, SortDirection.ASC)
                 .collect(Collectors.toList());
 
         Assert.assertEquals(exp1, act1);
@@ -41,12 +43,13 @@ public class RandomSorterTest {
     @Test
     public void shouldSortIn2() {
         List<String> exp2 = Arrays.asList(
-                "cft (0.0)",
-                "18th (0.0)",
-                "pop (0.0)"
+                "cft (1.0)",
+                "18th (1.0)",
+                "pop (1.0)"
         );
 
-        List<String> act2 = mockedSorter.sort(in2, SortDirection.ASC)
+        Mockito.when(mockSorter.getSortFeature(Mockito.anyString())).thenReturn(1d);
+        List<String> act2 = mockSorter.sort(in2, SortDirection.ASC)
                 .collect(Collectors.toList());
 
         Assert.assertEquals(exp2, act2);
