@@ -1,11 +1,13 @@
 package com.siberteam.vtungusov.sorter;
 
+import com.siberteam.vtungusov.annotation.Description;
 import com.siberteam.vtungusov.filesorter.PairEntry;
 
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Description("Calculate frequency of original word and sort by it.")
 public class FrequencySorter extends AbstractSorter<Integer> {
     @Override
     public Stream<String> sort(Stream<String> wordStream, SortDirection direction) {
@@ -25,5 +27,10 @@ public class FrequencySorter extends AbstractSorter<Integer> {
         return wordStream
                 .collect(Collectors
                         .toMap(k -> k, v -> 1, Integer::sum));
+    }
+
+    @Override
+    public String getName() {
+        return "FREQUENCY WORD SORTER";
     }
 }

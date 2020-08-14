@@ -22,7 +22,7 @@ public class Main {
             uiManager.handleOptions(args);
             String inputFileName = uiManager.getInputFileName();
             String outputFileName = uiManager.getOutputFileName();
-            Constructor<? extends Sorter> sorterClass = uiManager.getSorterClass();
+            Constructor<? extends Sorter> sorterClass = uiManager.getSorterConstructor();
             SortDirection direction = uiManager.getSortType();
             new FileSorter(sorterFactory)
                     .sort(inputFileName, outputFileName, sorterClass, direction);

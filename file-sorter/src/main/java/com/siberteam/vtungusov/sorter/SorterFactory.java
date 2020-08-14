@@ -52,4 +52,8 @@ public class SorterFactory {
         return !Modifier.isAbstract(clazz.getModifiers())
                 && !clazz.isInterface();
     }
+
+    public static Set<Class<? extends Sorter>> getSorters() {
+        return SORTERS;
+    }
 }

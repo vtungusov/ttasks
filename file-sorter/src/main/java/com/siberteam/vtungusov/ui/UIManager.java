@@ -1,5 +1,6 @@
 package com.siberteam.vtungusov.ui;
 
+import com.siberteam.vtungusov.annotation.Description;
 import com.siberteam.vtungusov.sorter.SortDirection;
 import com.siberteam.vtungusov.sorter.Sorter;
 import com.siberteam.vtungusov.sorter.SorterFactory;
@@ -7,6 +8,7 @@ import org.apache.commons.cli.*;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.stream.Collector;
 
 import static com.siberteam.vtungusov.ui.OptionInfo.*;
 
@@ -15,8 +17,9 @@ public class UIManager {
     private static final String HELP_TEMPLATE = "java -jar [jar name] [options]";
     public static final String HEADER = "options:";
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
+    public static final String ClASSES_PREFIX = "supportable classes:";
 
-    private SorterFactory sorterFactory;
+    private final SorterFactory sorterFactory;
     private CommandLine cmd;
 
     public UIManager(SorterFactory sorterFactory) {
@@ -38,7 +41,10 @@ public class UIManager {
             result = options.getOptions().stream()
                     .allMatch(this::isCorrectType);
         } catch (ParseException e) {
-            new HelpFormatter().printHelp(HELP_TEMPLATE, HEADER, options, e.getMessage());
+            String classSB = getClassStringBuilder();
+            HelpFormatter helpFormatter = new HelpFormatter();
+            helpFormatter.setWidth(200);
+            helpFormatter.printHelp(HELP_TEMPLATE, HEADER, options, classSB + e.getMessage());
         }
         return result;
     }
@@ -73,6 +79,31 @@ public class UIManager {
                 .build();
     }
 
+    private String getClassStringBuilder() {
+        StringBuilder sorters = SorterFactory.getSorters().stream()
+                .map(clazz -> clazz.getName() + ": " + getDescription(clazz))
+                .collect(putToString());
+        return ClASSES_PREFIX
+                + System.lineSeparator()
+                + sorters;
+    }
+
+    private String getDescription(Class<? extends Sorter> clazz) {
+        String result = "";
+        Description annotation = clazz.getAnnotation(Description.class);
+        if (annotation != null) {
+            result = annotation.value();
+        }
+        return result;
+    }
+
+    private Collector<String, StringBuilder, StringBuilder> putToString() {
+        return Collector.of(
+                StringBuilder::new,
+                (sb, str) -> sb.append(str).append(System.lineSeparator()),
+                StringBuilder::append);
+    }
+
     public String getInputFileName() {
         return cmd.getOptionValue(FILENAME.shortName);
     }
@@ -82,7 +113,7 @@ public class UIManager {
         return value == null ? DEFAULT_SORTED_FILENAME : value;
     }
 
-    public Constructor<? extends Sorter> getSorterClass() throws BadArgumentsException {
+    public Constructor<? extends Sorter> getSorterConstructor() throws BadArgumentsException {
         String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
         return sorterFactory.getConstructor(optionValue);
     }
