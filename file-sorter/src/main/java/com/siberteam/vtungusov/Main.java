@@ -14,6 +14,7 @@ public class Main {
     private static final String SUCCESSFULLY_FINISHED = "Program successfully finished\nYou can look report" +
             "\n-----------------------------";
     private static final String FILE_READING_ERROR = "Something wrong, file reading error";
+    private static final String CONCURRENCY_ERROR = "Concurrency execution error";
 
     public static void main(String[] args) {
         SorterFactory sorterFactory = new SorterFactory();
@@ -22,10 +23,17 @@ public class Main {
             uiManager.handleOptions(args);
             String inputFileName = uiManager.getInputFileName();
             String outputFileName = uiManager.getOutputFileName();
-            Constructor<? extends Sorter> sorterClass = uiManager.getSorterConstructor();
             SortDirection direction = uiManager.getSortType();
-            new FileSorter(sorterFactory)
-                    .sort(inputFileName, outputFileName, sorterClass, direction);
+            FileSorter fileSorter = new FileSorter(sorterFactory);
+            if (uiManager.isMultiSorting()) {
+                Integer threadCount = uiManager.getThreadCount();
+                fileSorter
+                        .multiSort(inputFileName, outputFileName, threadCount, direction);
+            } else {
+                Constructor<? extends Sorter> sorterClass = uiManager.getSorterConstructor();
+                fileSorter
+                        .sort(inputFileName, outputFileName, sorterClass, direction);
+            }
             System.out.println(SUCCESSFULLY_FINISHED);
         } catch (BadArgumentsException e) {
             if (e.getMessage() != null) {

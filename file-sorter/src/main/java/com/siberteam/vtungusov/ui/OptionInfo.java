@@ -6,9 +6,11 @@ public enum OptionInfo {
     OUTPUT("o", "output", true, "output filename",
             false, false, String.class),
     SORT_CLASS("c", "class", true, "java class which realise sorting. Format: vtungusov.sorter.AlphabetSorter",
-            true, false, Class.class),
+            false, false, Class.class),
     SORT_TYPE("d", "descending", false, "Descend sorting output words (ascend sorting without this options)",
-            false, false, String.class);
+            false, false, String.class),
+    MULTI_SORT("m", "multisort", true, "Apply all sorter classes for word sorting. Arg = parallelism level (natural number more than 0)",
+            false, false, Number.class);
 
     String shortName;
     String longName;

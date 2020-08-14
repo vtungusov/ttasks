@@ -56,4 +56,8 @@ public class SorterFactory {
     public static Set<Class<? extends Sorter>> getSorters() {
         return SORTERS;
     }
+
+    public Set<Class<? extends Sorter>> getAllSorter() {
+        return SORTERS;
+    }
 }

@@ -17,7 +17,7 @@ public class UIManager {
     private static final String HELP_TEMPLATE = "java -jar [jar name] [options]";
     public static final String HEADER = "options:";
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
-    public static final String ClASSES_PREFIX = "supportable classes:";
+    public static final String ClASSES_PREFIX = "Supportable classes:";
 
     private final SorterFactory sorterFactory;
     private CommandLine cmd;
@@ -121,5 +121,13 @@ public class UIManager {
     public SortDirection getSortType() {
         return cmd.hasOption(SORT_TYPE.shortName) ?
                 SortDirection.DESC : SortDirection.ASC;
+    }
+
+    public boolean isMultiSorting() {
+        return cmd.hasOption(MULTI_SORT.shortName);
+    }
+
+    public Integer getThreadCount() {
+        return Integer.parseInt(cmd.getOptionValue(MULTI_SORT.shortName));
     }
 }
