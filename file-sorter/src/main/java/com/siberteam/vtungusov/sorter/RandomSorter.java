@@ -12,6 +12,10 @@ public class RandomSorter extends AbstractSorter<Double> {
         random = new Random();
     }
 
+    public RandomSorter(Random random) {
+        this.random = random;
+    }
+
     @Override
     public Double getSortFeature(String s) {
         return random.nextDouble() * 10;

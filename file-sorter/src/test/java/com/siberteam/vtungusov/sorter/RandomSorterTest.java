@@ -7,11 +7,14 @@ import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RandomSorterTest {
-    private final RandomSorter mockSorter = Mockito.spy(RandomSorter.class);
+    private final Random mockRandom = Mockito.mock(Random.class);
+    private final Sorter sorter = new RandomSorter(mockRandom);
+
     private Stream<String> in1;
     private Stream<String> in2;
 
@@ -33,8 +36,8 @@ public class RandomSorterTest {
                 "cool (0.0)"
         );
 
-        Mockito.when(mockSorter.getSortFeature(Mockito.anyString())).thenReturn(0d);
-        List<String> act1 = mockSorter.sort(in1, SortDirection.ASC)
+        Mockito.when(mockRandom.nextDouble()).thenReturn(0d);
+        List<String> act1 = sorter.sort(in1, SortDirection.ASC)
                 .collect(Collectors.toList());
 
         Assert.assertEquals(exp1, act1);
@@ -43,13 +46,13 @@ public class RandomSorterTest {
     @Test
     public void shouldSortIn2() {
         List<String> exp2 = Arrays.asList(
-                "cft (1.0)",
-                "18th (1.0)",
-                "pop (1.0)"
+                "cft (10.0)",
+                "18th (10.0)",
+                "pop (10.0)"
         );
 
-        Mockito.when(mockSorter.getSortFeature(Mockito.anyString())).thenReturn(1d);
-        List<String> act2 = mockSorter.sort(in2, SortDirection.ASC)
+        Mockito.when(mockRandom.nextDouble()).thenReturn(1d);
+        List<String> act2 = sorter.sort(in2, SortDirection.ASC)
                 .collect(Collectors.toList());
 
         Assert.assertEquals(exp2, act2);
