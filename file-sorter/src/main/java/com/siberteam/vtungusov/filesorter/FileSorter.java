@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -90,7 +90,7 @@ public class FileSorter {
     }
 
     private void multiSort(String inputFileName, String outputFileName, Integer threadCount, SortDirection direction) {
-        ExecutorService executorService = new ForkJoinPool(threadCount);
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         sorterFactory.getAllSorter().parallelStream()
                 .map(getOptionalConstructor())
                 .filter(Optional::isPresent)
