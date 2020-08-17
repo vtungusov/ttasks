@@ -57,7 +57,17 @@ public class SorterFactory {
         return SORTERS;
     }
 
-    public Set<Class<? extends Sorter>> getAllSorter() {
-        return SORTERS;
+    public Set<Constructor<? extends Sorter>> getAllSorterConstructors() {
+        return SORTERS.stream()
+                .map(this::getConstructor)
+                .collect(Collectors.toSet());
+    }
+
+    private Constructor<? extends Sorter> getConstructor(Class<? extends Sorter> clazz) {
+        try {
+            return getConstructor(clazz.getName());
+        } catch (BadArgumentsException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }

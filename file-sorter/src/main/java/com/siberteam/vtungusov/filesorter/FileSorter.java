@@ -3,22 +3,20 @@ package com.siberteam.vtungusov.filesorter;
 import com.siberteam.vtungusov.sorter.SortDirection;
 import com.siberteam.vtungusov.sorter.Sorter;
 import com.siberteam.vtungusov.sorter.SorterFactory;
-import com.siberteam.vtungusov.ui.BadArgumentsException;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,20 +28,23 @@ public class FileSorter {
     private static final String STRING_SPLIT_REGEX = "[\\W_&&[^ЁёА-я]]";
     private static final String POSTFIX_DELIMITER = "_";
     public static final String INTERRUPT_EXCEPTION = "Interrupt exception due sorting with ";
+    public static final String WRITE_EXCEPTION = "Exception during file write ";
+    public static final String TIMED_OUT = "Task timed out";
     private final SorterFactory sorterFactory;
 
     public FileSorter(SorterFactory sorterFactory) {
         this.sorterFactory = sorterFactory;
     }
 
-    public void sortFile(String inputFileName, String outputFileName, Constructor<? extends Sorter> constructor, SortDirection direction, Integer threadCount)
-            throws IOException, InstantiationException {
+    public void sortFile(String inputFileName, String outputFileName, Set<Constructor<? extends Sorter>> constructors, Integer threadCount, SortDirection direction) throws IOException {
         checkInputFile(inputFileName);
-        if (constructor != null) {
-            sort(inputFileName, outputFileName, constructor, direction);
-        } else {
-            multiSort(inputFileName, outputFileName, threadCount, direction);
-        }
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        Map<? extends Future<?>, ? extends Constructor<? extends Sorter>>
+                futureMap = constructors.parallelStream()
+                .collect(getFutureMap(inputFileName, outputFileName, direction, executorService));
+        futureMap.entrySet().parallelStream()
+                .forEach(getResult());
+        executorService.shutdown();
     }
 
     private void sort(String inputFileName, String outputFileName, Constructor<? extends Sorter> constructor, SortDirection direction)
@@ -54,10 +55,15 @@ public class FileSorter {
         saveToFile(outputFileName, sortedStream);
     }
 
-    private void saveToFile(String outputFileName, Stream<String> stringStream) throws IOException {
-        List<String> stringList = stringStream
-                .collect(Collectors.toList());
-        Files.write(Paths.get(outputFileName), stringList);
+    private void saveToFile(String outputFileName, Stream<String> stringStream) {
+        stringStream
+                .forEachOrdered(s -> {
+                    try {
+                        Files.write(Paths.get(outputFileName), (s + System.lineSeparator()).getBytes(), StandardOpenOption.APPEND);
+                    } catch (IOException e) {
+                        throw new RuntimeException(WRITE_EXCEPTION + outputFileName);
+                    }
+                });
     }
 
     private Stream<String> prepareData(String inputFileName) throws IOException {
@@ -89,44 +95,31 @@ public class FileSorter {
         return sorterFactory.getSorter(constructor);
     }
 
-    private void multiSort(String inputFileName, String outputFileName, Integer threadCount, SortDirection direction) {
-        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-        sorterFactory.getAllSorter().parallelStream()
-                .map(getOptionalConstructor())
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .forEach(executeInParallel(inputFileName,
-                        outputFileName,
-                        direction,
-                        executorService));
-    }
-
-    private Consumer<? super Constructor<? extends Sorter>> executeInParallel(String inputFileName, String outputFileName, SortDirection direction, ExecutorService executorService) {
-        return constructor -> {
+    private Collector<? super Constructor<? extends Sorter>, ?, ? extends Map<? extends Future<?>, ? extends Constructor<? extends Sorter>>> getFutureMap
+            (String inputFileName, String outputFileName, SortDirection direction, ExecutorService executorService) {
+        return Collectors.toMap(constructor -> {
             try {
                 String postfix = POSTFIX_DELIMITER + constructor.getDeclaringClass().getSimpleName();
                 String outWithPostfix = addPostfix(outputFileName, postfix);
                 checkOutputFile(outWithPostfix);
-                executorService.submit(new SorterThread(constructor, inputFileName, outWithPostfix, direction)).get();
+                return executorService.submit(new SorterThread(constructor, inputFileName, outWithPostfix, direction));
             } catch (IOException e) {
-                System.out.println(e.getMessage());
-            } catch (InterruptedException e) {
-                System.out.println(INTERRUPT_EXCEPTION + constructor.getClass().getSimpleName());
-            } catch (ExecutionException e) {
-                System.out.println(DEFAULT_CONSTRUCTOR_EXPECTED + constructor.getClass().getSimpleName());
+                throw new RuntimeException(e.getMessage());
             }
-        };
+        }, constructor -> constructor, (c1, c2) -> (c1));
     }
 
-    private Function<Class<? extends Sorter>, Optional<? extends Constructor<? extends Sorter>>> getOptionalConstructor() {
-        return sorter -> {
-            Constructor<? extends Sorter> constructor = null;
+    private Consumer<? super Map.Entry<? extends Future<?>, ? extends Constructor<? extends Sorter>>> getResult() {
+        return o -> {
             try {
-                constructor = sorterFactory.getConstructor(sorter.getName());
-            } catch (BadArgumentsException e) {
-                System.out.println(e.getMessage());
+                o.getKey().get(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(INTERRUPT_EXCEPTION + o.getValue());
+            } catch (ExecutionException e) {
+                throw new RuntimeException(DEFAULT_CONSTRUCTOR_EXPECTED + o.getValue());
+            } catch (TimeoutException e) {
+                throw new RuntimeException(TIMED_OUT + o.getValue());
             }
-            return constructor != null ? Optional.of(constructor) : Optional.empty();
         };
     }
 
@@ -148,9 +141,9 @@ public class FileSorter {
             try {
                 sort(inputFileName, outputFileName, constructor, direction);
             } catch (IOException e) {
-                System.out.println(e.getMessage());
+                throw new RuntimeException(e.getMessage());
             } catch (InstantiationException e) {
-                System.out.println(DEFAULT_CONSTRUCTOR_EXPECTED + constructor.getClass().getSimpleName());
+                throw new RuntimeException(DEFAULT_CONSTRUCTOR_EXPECTED + constructor.getClass().getSimpleName());
             }
         }
     }

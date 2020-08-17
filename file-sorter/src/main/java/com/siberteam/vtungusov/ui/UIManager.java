@@ -8,6 +8,8 @@ import org.apache.commons.cli.*;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 import java.util.stream.Collector;
 
 import static com.siberteam.vtungusov.ui.OptionInfo.*;
@@ -47,23 +49,21 @@ public class UIManager {
             result = options.getOptions().stream()
                     .allMatch(this::isCorrectType);
         } catch (ParseException e) {
-            String classSB = getClassStringBuilder();
+            String classes = getSupportableClasses();
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.setWidth(200);
-            helpFormatter.printHelp(HELP_TEMPLATE, HELP_HEADER, options, classSB + e.getMessage());
+            helpFormatter.printHelp(HELP_TEMPLATE, HELP_HEADER, options, classes + e.getMessage());
         }
         return result;
     }
 
     private boolean isCorrectType(Option option) {
-        boolean result = false;
         try {
             cmd.getParsedOptionValue(option.getOpt());
-            result = true;
         } catch (ParseException e) {
-            System.out.println(INCORRECT_ARGUMENT + option.getOpt());
+            throw new RuntimeException(INCORRECT_ARGUMENT + option.getOpt());
         }
-        return result;
+        return true;
     }
 
     private Options getOptions() {
@@ -85,7 +85,7 @@ public class UIManager {
                 .build();
     }
 
-    private String getClassStringBuilder() {
+    private String getSupportableClasses() {
         StringBuilder sorters = SorterFactory.getSorters().stream()
                 .map(clazz -> clazz.getName() + ": " + getDescription(clazz))
                 .collect(putToString());
@@ -119,9 +119,13 @@ public class UIManager {
         return value == null ? DEFAULT_OUTPUT_FILENAME : value;
     }
 
-    public Constructor<? extends Sorter> getSorterConstructor() throws BadArgumentsException {
+    public Set<Constructor<? extends Sorter>> getSorterConstructors() throws BadArgumentsException {
         String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
-        return optionValue != null ? sorterFactory.getConstructor(optionValue) : null;
+        if (optionValue != null) {
+            return Collections.singleton(sorterFactory.getConstructor(optionValue));
+        } else {
+            return sorterFactory.getAllSorterConstructors();
+        }
     }
 
     public SortDirection getSortType() {
@@ -141,6 +145,6 @@ public class UIManager {
                 throw new BadArgumentsException(THREAD_COUNT_LIMIT);
             }
         }
-        return threadCount;
+        return threadCount == null ? 1 : threadCount;
     }
 }
