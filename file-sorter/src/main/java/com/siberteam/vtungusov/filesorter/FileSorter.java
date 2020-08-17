@@ -11,10 +11,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -84,33 +85,39 @@ public class FileSorter {
 
     public void multiSort(String inputFileName, String outputFileName, Integer threadCount, SortDirection direction) throws IOException {
         checkInputFile(inputFileName);
-        ForkJoinPool forkJoinPool = new ForkJoinPool(threadCount);
+        ExecutorService executorService = new ForkJoinPool(threadCount);
         sorterFactory.getAllSorter().parallelStream()
-                .map(getClassConstructorFunction())
-                .filter(Objects::nonNull)
-                .forEach(executeInParallel(inputFileName, outputFileName, direction, forkJoinPool));
+                .map(getOptionalConstructor())
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(executeInParallel(inputFileName,
+                        outputFileName,
+                        direction,
+                        executorService));
     }
 
-    private Consumer<? super Constructor<? extends Sorter>> executeInParallel(String inputFileName, String outputFileName, SortDirection direction, ForkJoinPool forkJoinPool) {
+    private Consumer<? super Constructor<? extends Sorter>> executeInParallel(String inputFileName, String outputFileName, SortDirection direction, ExecutorService executorService) {
         return constructor -> {
             String postfix = POSTFIX_DELIMITER + constructor.getDeclaringClass().getSimpleName();
             String outWithPostfix = addPostfix(outputFileName, postfix);
             try {
                 checkOutputFile(outWithPostfix);
-                forkJoinPool.submit(new SorterThread(constructor, inputFileName, outWithPostfix, direction)).get();
+                executorService.submit(new SorterThread(constructor, inputFileName, outWithPostfix, direction)).get();
             } catch (InterruptedException | ExecutionException | IOException e) {
                 e.printStackTrace();
             }
         };
     }
 
-    private Function<Class<? extends Sorter>, ? extends Constructor<? extends Sorter>> getClassConstructorFunction() {
+    private Function<Class<? extends Sorter>, Optional<? extends Constructor<? extends Sorter>>> getOptionalConstructor() {
         return sorter -> {
+            Constructor<? extends Sorter> constructor = null;
             try {
-                return sorterFactory.getConstructor(sorter.getName());
+                constructor = sorterFactory.getConstructor(sorter.getName());
             } catch (BadArgumentsException e) {
-                return null;
+                System.out.println(e.getMessage());
             }
+            return constructor != null ? Optional.of(constructor) : Optional.empty();
         };
     }
 
