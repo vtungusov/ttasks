@@ -13,11 +13,11 @@ import java.util.stream.Collector;
 import static com.siberteam.vtungusov.ui.OptionInfo.*;
 
 public class UIManager {
-    private static final String DEFAULT_SORTED_FILENAME = "sorted.txt";
+    private static final String DEFAULT_OUTPUT_FILENAME = "sorted.txt";
     private static final String HELP_TEMPLATE = "java -jar [jar name] [options]";
-    public static final String HEADER = "options:";
+    public static final String HELP_HEADER = "options:";
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
-    public static final String ClASSES_PREFIX = "Supportable classes:";
+    public static final String SUPPORTABLE_CLASSES_HEADER = "Supportable classes:";
 
     private final SorterFactory sorterFactory;
     private CommandLine cmd;
@@ -44,7 +44,7 @@ public class UIManager {
             String classSB = getClassStringBuilder();
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.setWidth(200);
-            helpFormatter.printHelp(HELP_TEMPLATE, HEADER, options, classSB + e.getMessage());
+            helpFormatter.printHelp(HELP_TEMPLATE, HELP_HEADER, options, classSB + e.getMessage());
         }
         return result;
     }
@@ -83,7 +83,7 @@ public class UIManager {
         StringBuilder sorters = SorterFactory.getSorters().stream()
                 .map(clazz -> clazz.getName() + ": " + getDescription(clazz))
                 .collect(putToString());
-        return ClASSES_PREFIX
+        return SUPPORTABLE_CLASSES_HEADER
                 + System.lineSeparator()
                 + sorters;
     }
@@ -110,7 +110,7 @@ public class UIManager {
 
     public String getOutputFileName() {
         String value = cmd.getOptionValue(OUTPUT.shortName);
-        return value == null ? DEFAULT_SORTED_FILENAME : value;
+        return value == null ? DEFAULT_OUTPUT_FILENAME : value;
     }
 
     public Constructor<? extends Sorter> getSorterConstructor() throws BadArgumentsException {

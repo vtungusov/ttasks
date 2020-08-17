@@ -84,21 +84,20 @@ public class FileSorter {
 
     public void multiSort(String inputFileName, String outputFileName, Integer threadCount, SortDirection direction) throws IOException {
         checkInputFile(inputFileName);
-        List<String> prepareData = prepareData(inputFileName).collect(Collectors.toList());
         ForkJoinPool forkJoinPool = new ForkJoinPool(threadCount);
         sorterFactory.getAllSorter().parallelStream()
                 .map(getClassConstructorFunction())
                 .filter(Objects::nonNull)
-                .forEach(executeInParallel(outputFileName, direction, prepareData, forkJoinPool));
+                .forEach(executeInParallel(inputFileName, outputFileName, direction, forkJoinPool));
     }
 
-    private Consumer<? super Constructor<? extends Sorter>> executeInParallel(String outputFileName, SortDirection direction, List<String> prepareData, ForkJoinPool forkJoinPool) {
+    private Consumer<? super Constructor<? extends Sorter>> executeInParallel(String inputFileName, String outputFileName, SortDirection direction, ForkJoinPool forkJoinPool) {
         return constructor -> {
             String postfix = POSTFIX_DELIMITER + constructor.getDeclaringClass().getSimpleName();
             String outWithPostfix = addPostfix(outputFileName, postfix);
             try {
                 checkOutputFile(outWithPostfix);
-                forkJoinPool.submit(new SorterThread(constructor, prepareData, outWithPostfix, direction)).get();
+                forkJoinPool.submit(new SorterThread(constructor, inputFileName, outWithPostfix, direction)).get();
             } catch (InterruptedException | ExecutionException | IOException e) {
                 e.printStackTrace();
             }
@@ -117,22 +116,20 @@ public class FileSorter {
 
     private class SorterThread implements Callable<Boolean> {
         private final Constructor<? extends Sorter> constructor;
-        private List<String> prepareData;
+        private final String inputFileName;
         private final String outputFileName;
         private final SortDirection direction;
 
-        public SorterThread(Constructor<? extends Sorter> constructor, List<String> prepareData, String outputFileName, SortDirection direction) {
+        public SorterThread(Constructor<? extends Sorter> constructor, String inputFileName, String outputFileName, SortDirection direction) {
             this.constructor = constructor;
-            this.prepareData = prepareData;
+            this.inputFileName = inputFileName;
             this.outputFileName = outputFileName;
             this.direction = direction;
         }
 
         @Override
         public Boolean call() throws IOException, InstantiationException {
-            Sorter sorter = sorterFactory.getSorter(constructor);
-            Stream<String> sortedData = sorter.sort(prepareData.stream(), direction);
-            saveToFile(outputFileName, sortedData);
+            sort(inputFileName, outputFileName, constructor, direction);
             return true;
         }
     }
