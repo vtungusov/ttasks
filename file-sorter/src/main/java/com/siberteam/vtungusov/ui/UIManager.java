@@ -20,6 +20,7 @@ public class UIManager {
     public static final String SUPPORTABLE_CLASSES_HEADER = "Supportable classes:";
     public static final int MIN_THREAD_COUNT = 2;
     public static final String THREAD_COUNT_LIMIT = "Options 'm' must be natural number more than " + (MIN_THREAD_COUNT - 1) + " and less than " + Integer.MAX_VALUE;
+    public static final String MUST_BE_DECLARED = "Options 'c' or 'm' must be declared!";
 
     private final SorterFactory sorterFactory;
     private CommandLine cmd;
@@ -33,7 +34,7 @@ public class UIManager {
             throw new BadArgumentsException();
         }
         if (!cmd.hasOption(SORT_CLASS.shortName) && !cmd.hasOption(MULTI_SORT.shortName)) {
-            throw new BadArgumentsException("Options 'c' or 'm' must be declared!");
+            throw new BadArgumentsException(MUST_BE_DECLARED);
         }
     }
 

@@ -15,7 +15,7 @@ public class SorterFactory {
     private static final String BASE_PACKAGE = "com.siberteam.vtungusov";
     private static final String INVALID_CLASS_ARGUMENT = "Invalid arguments value for 'c' option. Class not supported.";
     private static final Set<Class<? extends Sorter>> SORTERS;
-    private static final String DEFAULT_CONSTRUCTOR_EXPECTED = "Sorter class must contain default public constructor";
+    public static final String DEFAULT_CONSTRUCTOR_EXPECTED = "Sorter class must contain default public constructor. Constructor expected for ";
     private static final String CREATION_ERROR = "Error due sorter creation";
 
     static {
@@ -29,7 +29,7 @@ public class SorterFactory {
         try {
             return constructor.newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException ignore) {
-            throw new InstantiationException(CREATION_ERROR);
+            throw new InstantiationException(CREATION_ERROR + constructor.getClass().getName());
         }
     }
 
@@ -38,7 +38,7 @@ public class SorterFactory {
         try {
             return optClass.getConstructor();
         } catch (NoSuchMethodException e) {
-            throw new BadArgumentsException(DEFAULT_CONSTRUCTOR_EXPECTED);
+            throw new BadArgumentsException(DEFAULT_CONSTRUCTOR_EXPECTED + clazz);
         }
     }
 

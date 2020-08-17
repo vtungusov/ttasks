@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
@@ -23,12 +22,14 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.siberteam.vtungusov.sorter.SorterFactory.DEFAULT_CONSTRUCTOR_EXPECTED;
 import static com.siberteam.vtungusov.util.FileUtil.checkInputFile;
 import static com.siberteam.vtungusov.util.FileUtil.checkOutputFile;
 
 public class FileSorter {
     private static final String STRING_SPLIT_REGEX = "[\\W_&&[^ЁёА-я]]";
     private static final String POSTFIX_DELIMITER = "_";
+    public static final String INTERRUPT_EXCEPTION = "Interrupt exception due sorting with ";
     private final SorterFactory sorterFactory;
 
     public FileSorter(SorterFactory sorterFactory) {
@@ -37,7 +38,7 @@ public class FileSorter {
 
     public void sortFile(String inputFileName, String outputFileName, Constructor<? extends Sorter> constructor, SortDirection direction, Integer threadCount)
             throws IOException, InstantiationException {
-        validateFiles(inputFileName, outputFileName);
+        checkInputFile(inputFileName);
         if (constructor != null) {
             sort(inputFileName, outputFileName, constructor, direction);
         } else {
@@ -47,6 +48,7 @@ public class FileSorter {
 
     private void sort(String inputFileName, String outputFileName, Constructor<? extends Sorter> constructor, SortDirection direction)
             throws IOException, InstantiationException {
+        checkOutputFile(outputFileName);
         Stream<String> prepareData = prepareData(inputFileName);
         Stream<String> sortedStream = getSortedStream(prepareData, constructor, direction);
         saveToFile(outputFileName, sortedStream);
@@ -87,11 +89,6 @@ public class FileSorter {
         return sorterFactory.getSorter(constructor);
     }
 
-    private void validateFiles(String inputFileName, String outputFileName) throws IOException {
-        checkInputFile(inputFileName);
-        checkOutputFile(outputFileName);
-    }
-
     private void multiSort(String inputFileName, String outputFileName, Integer threadCount, SortDirection direction) {
         ExecutorService executorService = new ForkJoinPool(threadCount);
         sorterFactory.getAllSorter().parallelStream()
@@ -106,13 +103,17 @@ public class FileSorter {
 
     private Consumer<? super Constructor<? extends Sorter>> executeInParallel(String inputFileName, String outputFileName, SortDirection direction, ExecutorService executorService) {
         return constructor -> {
-            String postfix = POSTFIX_DELIMITER + constructor.getDeclaringClass().getSimpleName();
-            String outWithPostfix = addPostfix(outputFileName, postfix);
             try {
+                String postfix = POSTFIX_DELIMITER + constructor.getDeclaringClass().getSimpleName();
+                String outWithPostfix = addPostfix(outputFileName, postfix);
                 checkOutputFile(outWithPostfix);
                 executorService.submit(new SorterThread(constructor, inputFileName, outWithPostfix, direction)).get();
-            } catch (InterruptedException | ExecutionException | IOException e) {
-                e.printStackTrace();
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            } catch (InterruptedException e) {
+                System.out.println(INTERRUPT_EXCEPTION + constructor.getClass().getSimpleName());
+            } catch (ExecutionException e) {
+                System.out.println(DEFAULT_CONSTRUCTOR_EXPECTED + constructor.getClass().getSimpleName());
             }
         };
     }
@@ -129,7 +130,7 @@ public class FileSorter {
         };
     }
 
-    private class SorterThread implements Callable<Boolean> {
+    private class SorterThread implements Runnable {
         private final Constructor<? extends Sorter> constructor;
         private final String inputFileName;
         private final String outputFileName;
@@ -143,9 +144,14 @@ public class FileSorter {
         }
 
         @Override
-        public Boolean call() throws IOException, InstantiationException {
-            sort(inputFileName, outputFileName, constructor, direction);
-            return true;
+        public void run() {
+            try {
+                sort(inputFileName, outputFileName, constructor, direction);
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            } catch (InstantiationException e) {
+                System.out.println(DEFAULT_CONSTRUCTOR_EXPECTED + constructor.getClass().getSimpleName());
+            }
         }
     }
 
