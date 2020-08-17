@@ -3,6 +3,7 @@ package com.siberteam.vtungusov.sorter;
 import com.siberteam.vtungusov.annotation.Description;
 
 import java.util.Random;
+import java.util.stream.Stream;
 
 @Description("Assigns each word a random numerical value and sorts by it.")
 public class RandomSorter extends AbstractSorter<Double> {
@@ -14,6 +15,15 @@ public class RandomSorter extends AbstractSorter<Double> {
 
     public RandomSorter(Random random) {
         this.random = random;
+    }
+
+    @Override
+    public Stream<String> sort(Stream<String> stringStream, SortDirection direction) {
+        return stringStream
+                .distinct()
+                .map(super::getPairEntry)
+                .sorted(getComparator(direction))
+                .map(this::toString);
     }
 
     @Override

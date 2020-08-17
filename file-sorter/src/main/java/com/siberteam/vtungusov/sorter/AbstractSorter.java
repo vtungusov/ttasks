@@ -27,7 +27,7 @@ public abstract class AbstractSorter<T extends Comparable<T>> implements Sorter 
         return comparator.thenComparing(Comparator.naturalOrder());
     }
 
-    private PairEntry<T> getPairEntry(String s) {
+    protected PairEntry<T> getPairEntry(String s) {
         T feature = getSortFeature(s);
         return new PairEntry<>(s, feature);
     }
