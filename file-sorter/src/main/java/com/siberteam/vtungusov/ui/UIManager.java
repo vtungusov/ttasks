@@ -18,6 +18,8 @@ public class UIManager {
     public static final String HELP_HEADER = "options:";
     public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
     public static final String SUPPORTABLE_CLASSES_HEADER = "Supportable classes:";
+    public static final int MIN_THREAD_COUNT = 2;
+    public static final String THREAD_COUNT_LIMIT = "Options 'm' must be natural number more than " + (MIN_THREAD_COUNT - 1) + " and less than " + Integer.MAX_VALUE;
 
     private final SorterFactory sorterFactory;
     private CommandLine cmd;
@@ -127,7 +129,15 @@ public class UIManager {
         return cmd.hasOption(MULTI_SORT.shortName);
     }
 
-    public Integer getThreadCount() {
-        return Integer.parseInt(cmd.getOptionValue(MULTI_SORT.shortName));
+    public Integer getThreadCount() throws BadArgumentsException {
+        try {
+            int threadCount = Integer.parseInt(cmd.getOptionValue(MULTI_SORT.shortName));
+            if (threadCount < MIN_THREAD_COUNT) {
+                throw new BadArgumentsException(THREAD_COUNT_LIMIT);
+            }
+            return threadCount;
+        } catch (NumberFormatException e) {
+            throw new BadArgumentsException(THREAD_COUNT_LIMIT);
+        }
     }
 }
