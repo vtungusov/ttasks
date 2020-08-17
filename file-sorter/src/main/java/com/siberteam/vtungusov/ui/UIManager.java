@@ -32,6 +32,9 @@ public class UIManager {
         if (!validateOptions(args)) {
             throw new BadArgumentsException();
         }
+        if (!cmd.hasOption(SORT_CLASS.shortName) && !cmd.hasOption(MULTI_SORT.shortName)) {
+            throw new BadArgumentsException("Options 'c' or 'm' must be declared!");
+        }
     }
 
     private boolean validateOptions(String[] args) {
@@ -117,7 +120,7 @@ public class UIManager {
 
     public Constructor<? extends Sorter> getSorterConstructor() throws BadArgumentsException {
         String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
-        return sorterFactory.getConstructor(optionValue);
+        return optionValue != null ? sorterFactory.getConstructor(optionValue) : null;
     }
 
     public SortDirection getSortType() {
@@ -125,19 +128,18 @@ public class UIManager {
                 SortDirection.DESC : SortDirection.ASC;
     }
 
-    public boolean isMultiSorting() {
-        return cmd.hasOption(MULTI_SORT.shortName);
-    }
-
     public Integer getThreadCount() throws BadArgumentsException {
-        try {
-            int threadCount = Integer.parseInt(cmd.getOptionValue(MULTI_SORT.shortName));
-            if (threadCount < MIN_THREAD_COUNT) {
+        Integer threadCount = null;
+        if (cmd.hasOption(MULTI_SORT.shortName)) {
+            try {
+                threadCount = Integer.parseInt(cmd.getOptionValue(MULTI_SORT.shortName));
+                if (threadCount < MIN_THREAD_COUNT) {
+                    throw new BadArgumentsException(THREAD_COUNT_LIMIT);
+                }
+            } catch (NumberFormatException e) {
                 throw new BadArgumentsException(THREAD_COUNT_LIMIT);
             }
-            return threadCount;
-        } catch (NumberFormatException e) {
-            throw new BadArgumentsException(THREAD_COUNT_LIMIT);
         }
+        return threadCount;
     }
 }

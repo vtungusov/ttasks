@@ -35,9 +35,18 @@ public class FileSorter {
         this.sorterFactory = sorterFactory;
     }
 
-    public void sort(String inputFileName, String outputFileName, Constructor<? extends Sorter> constructor, SortDirection direction)
+    public void sortFile(String inputFileName, String outputFileName, Constructor<? extends Sorter> constructor, SortDirection direction, Integer threadCount)
             throws IOException, InstantiationException {
         validateFiles(inputFileName, outputFileName);
+        if (constructor != null) {
+            sort(inputFileName, outputFileName, constructor, direction);
+        } else {
+            multiSort(inputFileName, outputFileName, threadCount, direction);
+        }
+    }
+
+    private void sort(String inputFileName, String outputFileName, Constructor<? extends Sorter> constructor, SortDirection direction)
+            throws IOException, InstantiationException {
         Stream<String> prepareData = prepareData(inputFileName);
         Stream<String> sortedStream = getSortedStream(prepareData, constructor, direction);
         saveToFile(outputFileName, sortedStream);
@@ -83,8 +92,7 @@ public class FileSorter {
         checkOutputFile(outputFileName);
     }
 
-    public void multiSort(String inputFileName, String outputFileName, Integer threadCount, SortDirection direction) throws IOException {
-        checkInputFile(inputFileName);
+    private void multiSort(String inputFileName, String outputFileName, Integer threadCount, SortDirection direction) {
         ExecutorService executorService = new ForkJoinPool(threadCount);
         sorterFactory.getAllSorter().parallelStream()
                 .map(getOptionalConstructor())

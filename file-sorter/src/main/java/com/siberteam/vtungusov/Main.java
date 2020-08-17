@@ -23,17 +23,15 @@ public class Main {
             uiManager.handleOptions(args);
             String inputFileName = uiManager.getInputFileName();
             String outputFileName = uiManager.getOutputFileName();
+            Constructor<? extends Sorter> sorterConstructor = uiManager.getSorterConstructor();
             SortDirection direction = uiManager.getSortType();
-            FileSorter fileSorter = new FileSorter(sorterFactory);
-            if (uiManager.isMultiSorting()) {
-                Integer threadCount = uiManager.getThreadCount();
-                fileSorter
-                        .multiSort(inputFileName, outputFileName, threadCount, direction);
-            } else {
-                Constructor<? extends Sorter> sorterClass = uiManager.getSorterConstructor();
-                fileSorter
-                        .sort(inputFileName, outputFileName, sorterClass, direction);
-            }
+            Integer threadCount = uiManager.getThreadCount();
+            new FileSorter(sorterFactory)
+                    .sortFile(inputFileName,
+                            outputFileName,
+                            sorterConstructor,
+                            direction,
+                            threadCount);
             System.out.println(SUCCESSFULLY_FINISHED);
         } catch (BadArgumentsException e) {
             if (e.getMessage() != null) {
