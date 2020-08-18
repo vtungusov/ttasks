@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
@@ -56,14 +55,11 @@ public class FileSorter {
     }
 
     private void saveToFile(String outputFileName, Stream<String> stringStream) {
-        stringStream
-                .forEachOrdered(s -> {
-                    try {
-                        Files.write(Paths.get(outputFileName), (s + System.lineSeparator()).getBytes(), StandardOpenOption.APPEND);
-                    } catch (IOException e) {
-                        throw new RuntimeException(WRITE_EXCEPTION + outputFileName);
-                    }
-                });
+        try {
+            Files.write(Paths.get(outputFileName), (Iterable<String>) stringStream::iterator);
+        } catch (IOException e) {
+            throw new RuntimeException(WRITE_EXCEPTION + outputFileName);
+        }
     }
 
     private Stream<String> prepareData(String inputFileName) throws IOException {
