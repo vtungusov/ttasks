@@ -1,4 +1,4 @@
-package com.siberteam.vtungusov.filesorter;
+package com.siberteam.vtungusov.fileworker;
 
 import java.util.Map;
 import java.util.Objects;

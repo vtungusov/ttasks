@@ -133,8 +133,8 @@ public class UIManager {
                 SortDirection.DESC : SortDirection.ASC;
     }
 
-    public Integer getThreadCount() throws BadArgumentsException {
-        Integer threadCount = null;
+    public int getThreadCount() throws BadArgumentsException {
+        int threadCount = 1;
         if (cmd.hasOption(MULTI_SORT.shortName)) {
             try {
                 threadCount = Integer.parseInt(cmd.getOptionValue(MULTI_SORT.shortName));
@@ -145,6 +145,6 @@ public class UIManager {
                 throw new BadArgumentsException(THREAD_COUNT_LIMIT);
             }
         }
-        return threadCount == null ? 1 : threadCount;
+        return threadCount;
     }
 }
