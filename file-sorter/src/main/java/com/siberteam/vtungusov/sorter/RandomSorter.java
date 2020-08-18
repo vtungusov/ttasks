@@ -18,15 +18,6 @@ public class RandomSorter extends AbstractSorter<Double> {
     }
 
     @Override
-    public Stream<String> sort(Stream<String> stringStream, SortDirection direction) {
-        return stringStream
-                .distinct()
-                .map(super::getPairEntry)
-                .sorted(getComparator(direction))
-                .map(this::toString);
-    }
-
-    @Override
     public Double getSortFeature(String s) {
         return random.nextDouble() * 10;
     }

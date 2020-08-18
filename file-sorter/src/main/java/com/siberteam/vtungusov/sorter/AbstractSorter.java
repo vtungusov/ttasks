@@ -9,8 +9,8 @@ public abstract class AbstractSorter<T extends Comparable<T>> implements Sorter 
     @Override
     public Stream<String> sort(Stream<String> stringStream, SortDirection direction) {
         return stringStream
-                .map(this::getPairEntry)
                 .distinct()
+                .map(this::getPairEntry)
                 .sorted(getComparator(direction))
                 .map(this::toString);
     }
