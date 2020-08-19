@@ -1,5 +1,6 @@
 package com.siberteam.vtungusov.ui;
 
+import com.siberteam.vtungusov.exception.BadArgumentsException;
 import com.siberteam.vtungusov.model.SorterData;
 import com.siberteam.vtungusov.sorter.SortDirection;
 import com.siberteam.vtungusov.sorter.SorterFactory;
@@ -13,15 +14,14 @@ import java.util.stream.Collector;
 import static com.siberteam.vtungusov.ui.OptionInfo.*;
 
 public class UIManager {
-    private static final String DEFAULT_OUTPUT_FILENAME = "sorted.txt";
-    private static final String HELP_TEMPLATE = "java -jar [jar name] [options]";
     public static final String HELP_HEADER = "options:";
     public static final String INCORRECT_ARGUMENT_TYPE = "Incorrect argument type for option ";
     public static final String SUPPORTABLE_CLASSES_HEADER = "Supportable classes:";
     public static final int MIN_THREAD_COUNT = 2;
     public static final String THREAD_COUNT_LIMIT = "Options 'm' must be natural number more than " + (MIN_THREAD_COUNT - 1) + " and less than " + Integer.MAX_VALUE;
     public static final String MUST_BE_DECLARED = "Options 'c' or 'm' must be declared!";
-
+    private static final String DEFAULT_OUTPUT_FILENAME = "sorted.txt";
+    private static final String HELP_TEMPLATE = "java -jar [jar name] [options]";
     private final SorterFactory sorterFactory;
     private CommandLine cmd;
 
@@ -59,7 +59,7 @@ public class UIManager {
         try {
             cmd.getParsedOptionValue(option.getOpt());
         } catch (ParseException e) {
-            throw new RuntimeException(INCORRECT_ARGUMENT_TYPE + option.getOpt());
+            throw new IllegalArgumentException(INCORRECT_ARGUMENT_TYPE + option.getOpt());
         }
         return true;
     }

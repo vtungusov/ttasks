@@ -1,5 +1,8 @@
 package com.siberteam.vtungusov.fileworker;
 
+import com.siberteam.vtungusov.exception.FileIOException;
+import com.siberteam.vtungusov.exception.InitializationException;
+import com.siberteam.vtungusov.exception.ThreadException;
 import com.siberteam.vtungusov.model.Order;
 import com.siberteam.vtungusov.model.SorterData;
 import com.siberteam.vtungusov.sorter.Sorter;
@@ -24,14 +27,16 @@ import static com.siberteam.vtungusov.util.FileUtil.checkInputFile;
 import static com.siberteam.vtungusov.util.FileUtil.checkOutputFile;
 
 public class FileWorker {
-    private static final String STRING_SPLIT_REGEX = "[\\W_&&[^ЁёА-я]]";
-    private static final String POSTFIX_DELIMITER = "_";
     public static final String INTERRUPT_WITH = "Thread was interrupted due sorting with ";
-    public static final String WRITE_ERROR = "Error during file write ";
+    public static final String WRITE_ERROR = "Error during file writing ";
     public static final String TIMED_OUT = "Task timed out";
     public static final String EXTENSION_DELIMITER = ".";
     public static final int TIMEOUT_VALUE = 1;
     public static final TimeUnit TIMEOUT_UNIT = TimeUnit.MINUTES;
+    public static final String FILE_HEADER_PREFIX = "ORIGINAL (";
+    public static final String FILE_HEADER_POSTFIX = ")";
+    private static final String STRING_SPLIT_REGEX = "[\\W_&&[^ЁёА-я]]";
+    private static final String POSTFIX_DELIMITER = "_";
     private final SorterFactory sorterFactory;
 
     public FileWorker(SorterFactory sorterFactory) {
@@ -48,7 +53,7 @@ public class FileWorker {
         executorService.shutdown();
     }
 
-    private void sort(Order order, SorterData sorterData, String outFileName) throws IOException, InstantiationException {
+    private void sort(Order order, SorterData sorterData, String outFileName) throws IOException {
         Stream<String> prepareData = getPreparedData(order.getInputFileName());
         Stream<String> sortedStream = getSortedWords(prepareData, order, sorterData);
         saveToFile(outFileName, sortedStream);
@@ -58,7 +63,7 @@ public class FileWorker {
         try {
             Files.write(Paths.get(outFileName), (Iterable<String>) stringStream::iterator);
         } catch (IOException e) {
-            throw new RuntimeException(WRITE_ERROR + outFileName);
+            throw new FileIOException(WRITE_ERROR + outFileName);
         }
     }
 
@@ -71,10 +76,11 @@ public class FileWorker {
                 .map(String::toLowerCase);
     }
 
-    private Stream<String> getSortedWords(Stream<String> wordStream, Order order, SorterData sorterData)
-            throws InstantiationException {
+    private Stream<String> getSortedWords(Stream<String> wordStream, Order order, SorterData sorterData) {
         Sorter sorter = sorterFactory.getSorter(sorterData.getConstructor());
-        return sorter.sort(wordStream, order.getDirection());
+        Stream<String> sortedStream = sorter.sort(wordStream, order.getDirection());
+
+        return Stream.concat(Stream.of(FILE_HEADER_PREFIX + sorter.getName() + FILE_HEADER_POSTFIX), sortedStream);
     }
 
     private Predicate<String> notEmpty() {
@@ -102,27 +108,25 @@ public class FileWorker {
                     try {
                         sort(order, sorterData, outWithPostfix);
                     } catch (IOException e) {
-                        throw new RuntimeException(e.getMessage());
-                    } catch (InstantiationException e) {
-                        throw new RuntimeException(DEFAULT_CONSTRUCTOR_EXPECTED + sorterData.getName());
+                        throw new FileIOException(e.getMessage());
                     }
                 });
             } catch (IOException e) {
-                throw new RuntimeException(e.getMessage());
+                throw new FileIOException(e.getMessage());
             }
         };
     }
 
-    private Consumer<? super Map.Entry<SorterData, Future<?>>> setTimeOut() {
+    private Consumer<Map.Entry<SorterData, Future<?>>> setTimeOut() {
         return o -> {
             try {
                 o.getValue().get(TIMEOUT_VALUE, TIMEOUT_UNIT);
             } catch (InterruptedException e) {
-                throw new RuntimeException(INTERRUPT_WITH + o.getKey().getName());
+                throw new ThreadException(INTERRUPT_WITH + o.getKey().getName());
             } catch (ExecutionException e) {
-                throw new RuntimeException(DEFAULT_CONSTRUCTOR_EXPECTED + o.getKey().getName());
+                throw new InitializationException(DEFAULT_CONSTRUCTOR_EXPECTED + o.getKey().getName());
             } catch (TimeoutException e) {
-                throw new RuntimeException(TIMED_OUT + o.getKey().getName());
+                throw new ThreadException(TIMED_OUT + o.getKey().getName());
             }
         };
     }

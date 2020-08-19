@@ -1,9 +1,9 @@
 package com.siberteam.vtungusov;
 
+import com.siberteam.vtungusov.exception.BadArgumentsException;
 import com.siberteam.vtungusov.fileworker.FileWorker;
 import com.siberteam.vtungusov.model.Order;
 import com.siberteam.vtungusov.sorter.SorterFactory;
-import com.siberteam.vtungusov.ui.BadArgumentsException;
 import com.siberteam.vtungusov.ui.UIManager;
 
 import java.io.IOException;
