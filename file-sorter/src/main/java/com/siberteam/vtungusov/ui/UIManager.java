@@ -108,7 +108,7 @@ public class UIManager {
         return value == null ? DEFAULT_OUTPUT_FILENAME : value;
     }
 
-    public Set<SorterData> getAllSorterData() throws BadArgumentsException {
+    public Set<SorterData> getSortersData() throws BadArgumentsException {
         String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
         if (optionValue != null) {
             return Collections.singleton(sorterFactory.getSorterData(optionValue));

@@ -7,7 +7,6 @@ import com.siberteam.vtungusov.sorter.SorterFactory;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -43,7 +42,7 @@ public class FileWorker {
         checkInputFile(order.getInputFileName());
         ExecutorService executorService = Executors.newFixedThreadPool(order.getThreadCount());
         Map<SorterData, Future<?>> futureMap = order.getSortersDataSet().parallelStream()
-                .collect(getFutureMap(order, executorService));
+                .collect(getSubmittedTasks(order, executorService));
         futureMap.entrySet().parallelStream()
                 .forEach(setTimeOut());
         executorService.shutdown();
@@ -74,7 +73,7 @@ public class FileWorker {
 
     private Stream<String> getSortedWords(Stream<String> wordStream, Order order, SorterData sorterData)
             throws InstantiationException {
-        Sorter sorter = getSorter(sorterData.getConstructor());
+        Sorter sorter = sorterFactory.getSorter(sorterData.getConstructor());
         return sorter.sort(wordStream, order.getDirection());
     }
 
@@ -87,18 +86,13 @@ public class FileWorker {
                 .allMatch(Character::isDigit));
     }
 
-    private Sorter getSorter(Constructor<? extends Sorter> constructor) throws
-            InstantiationException {
-        return sorterFactory.getSorter(constructor);
-    }
-
-    private Collector<SorterData, ?, Map<SorterData, Future<?>>> getFutureMap(Order order, ExecutorService executor) {
+    private Collector<SorterData, ?, Map<SorterData, Future<?>>> getSubmittedTasks(Order order, ExecutorService executor) {
         return Collectors.toMap(sorterData -> sorterData,
-                getFuture(order, executor),
+                createAndSubmitTask(order, executor),
                 (f1, f2) -> f2);
     }
 
-    private Function<SorterData, Future<?>> getFuture(Order order, ExecutorService executor) {
+    private Function<SorterData, Future<?>> createAndSubmitTask(Order order, ExecutorService executor) {
         return sorterData -> {
             try {
                 String postfix = POSTFIX_DELIMITER + sorterData.getName();

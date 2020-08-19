@@ -21,7 +21,7 @@ public class Main {
             Order order = new Order(
                     uiManager.getInputFileName(),
                     uiManager.getOutputFileName(),
-                    uiManager.getAllSorterData(),
+                    uiManager.getSortersData(),
                     uiManager.getThreadCount(),
                     uiManager.getSortType()
             );
