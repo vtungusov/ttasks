@@ -104,21 +104,17 @@ public class FileWorker {
                 String postfix = POSTFIX_DELIMITER + sorterData.getName();
                 String outWithPostfix = addPostfix(order.getOutputFileName(), postfix);
                 checkOutputFile(outWithPostfix);
-                return executor.submit(getRunnable(order, sorterData, outWithPostfix));
+                return executor.submit(() -> {
+                    try {
+                        sort(order, sorterData, outWithPostfix);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e.getMessage());
+                    } catch (InstantiationException e) {
+                        throw new RuntimeException(DEFAULT_CONSTRUCTOR_EXPECTED + sorterData.getName());
+                    }
+                });
             } catch (IOException e) {
                 throw new RuntimeException(e.getMessage());
-            }
-        };
-    }
-
-    private Runnable getRunnable(Order order, SorterData sorterData, String outFileName) {
-        return () -> {
-            try {
-                sort(order, sorterData, outFileName);
-            } catch (IOException e) {
-                throw new RuntimeException(e.getMessage());
-            } catch (InstantiationException e) {
-                throw new RuntimeException(DEFAULT_CONSTRUCTOR_EXPECTED + sorterData.getName());
             }
         };
     }
