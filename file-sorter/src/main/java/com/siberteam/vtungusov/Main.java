@@ -1,7 +1,7 @@
 package com.siberteam.vtungusov;
 
 import com.siberteam.vtungusov.fileworker.FileWorker;
-import com.siberteam.vtungusov.fileworker.SortOrder;
+import com.siberteam.vtungusov.model.Order;
 import com.siberteam.vtungusov.sorter.SorterFactory;
 import com.siberteam.vtungusov.ui.BadArgumentsException;
 import com.siberteam.vtungusov.ui.UIManager;
@@ -18,15 +18,15 @@ public class Main {
         UIManager uiManager = new UIManager(sorterFactory);
         try {
             uiManager.handleOptions(args);
-            SortOrder sortOrder = new SortOrder(
+            Order order = new Order(
                     uiManager.getInputFileName(),
                     uiManager.getOutputFileName(),
-                    uiManager.getSorterConstructors(),
+                    uiManager.getAllSorterData(),
                     uiManager.getThreadCount(),
                     uiManager.getSortType()
             );
             new FileWorker(sorterFactory)
-                    .sortFile(sortOrder);
+                    .sortFile(order);
             System.out.println(SUCCESSFULLY_FINISHED);
         } catch (BadArgumentsException e) {
             if (e.getMessage() != null) {

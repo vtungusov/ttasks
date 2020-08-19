@@ -1,12 +1,10 @@
 package com.siberteam.vtungusov.ui;
 
-import com.siberteam.vtungusov.annotation.Description;
+import com.siberteam.vtungusov.model.SorterData;
 import com.siberteam.vtungusov.sorter.SortDirection;
-import com.siberteam.vtungusov.sorter.Sorter;
 import com.siberteam.vtungusov.sorter.SorterFactory;
 import org.apache.commons.cli.*;
 
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
@@ -18,7 +16,7 @@ public class UIManager {
     private static final String DEFAULT_OUTPUT_FILENAME = "sorted.txt";
     private static final String HELP_TEMPLATE = "java -jar [jar name] [options]";
     public static final String HELP_HEADER = "options:";
-    public static final String INCORRECT_ARGUMENT = "Incorrect argument type for option ";
+    public static final String INCORRECT_ARGUMENT_TYPE = "Incorrect argument type for option ";
     public static final String SUPPORTABLE_CLASSES_HEADER = "Supportable classes:";
     public static final int MIN_THREAD_COUNT = 2;
     public static final String THREAD_COUNT_LIMIT = "Options 'm' must be natural number more than " + (MIN_THREAD_COUNT - 1) + " and less than " + Integer.MAX_VALUE;
@@ -61,7 +59,7 @@ public class UIManager {
         try {
             cmd.getParsedOptionValue(option.getOpt());
         } catch (ParseException e) {
-            throw new RuntimeException(INCORRECT_ARGUMENT + option.getOpt());
+            throw new RuntimeException(INCORRECT_ARGUMENT_TYPE + option.getOpt());
         }
         return true;
     }
@@ -86,21 +84,12 @@ public class UIManager {
     }
 
     private String getSupportableClasses() {
-        StringBuilder sorters = SorterFactory.getSorters().stream()
-                .map(clazz -> clazz.getName() + ": " + getDescription(clazz))
+        StringBuilder sorters = sorterFactory.getAllSorterData().stream()
+                .map(sData -> sData.getName() + ": " + sData.getDescription())
                 .collect(putToString());
         return SUPPORTABLE_CLASSES_HEADER
                 + System.lineSeparator()
                 + sorters;
-    }
-
-    private String getDescription(Class<? extends Sorter> clazz) {
-        String result = "";
-        Description annotation = clazz.getAnnotation(Description.class);
-        if (annotation != null) {
-            result = annotation.value();
-        }
-        return result;
     }
 
     private Collector<String, StringBuilder, StringBuilder> putToString() {
@@ -119,12 +108,12 @@ public class UIManager {
         return value == null ? DEFAULT_OUTPUT_FILENAME : value;
     }
 
-    public Set<Constructor<? extends Sorter>> getSorterConstructors() throws BadArgumentsException {
+    public Set<SorterData> getAllSorterData() throws BadArgumentsException {
         String optionValue = cmd.getOptionValue(SORT_CLASS.shortName);
         if (optionValue != null) {
-            return Collections.singleton(sorterFactory.getConstructor(optionValue));
+            return Collections.singleton(sorterFactory.getSorterData(optionValue));
         } else {
-            return sorterFactory.getAllSorterConstructors();
+            return sorterFactory.getAllSorterData();
         }
     }
 

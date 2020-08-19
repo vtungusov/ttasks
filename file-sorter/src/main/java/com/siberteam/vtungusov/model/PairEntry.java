@@ -1,4 +1,4 @@
-package com.siberteam.vtungusov.fileworker;
+package com.siberteam.vtungusov.model;
 
 import java.util.Map;
 import java.util.Objects;

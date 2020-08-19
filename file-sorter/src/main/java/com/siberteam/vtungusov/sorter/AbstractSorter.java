@@ -1,6 +1,6 @@
 package com.siberteam.vtungusov.sorter;
 
-import com.siberteam.vtungusov.fileworker.PairEntry;
+import com.siberteam.vtungusov.model.PairEntry;
 
 import java.util.Comparator;
 import java.util.stream.Stream;

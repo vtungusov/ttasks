@@ -1,7 +1,7 @@
 package com.siberteam.vtungusov.sorter;
 
 import com.siberteam.vtungusov.annotation.Description;
-import com.siberteam.vtungusov.fileworker.PairEntry;
+import com.siberteam.vtungusov.model.PairEntry;
 
 import java.util.Map;
 import java.util.stream.Collectors;
