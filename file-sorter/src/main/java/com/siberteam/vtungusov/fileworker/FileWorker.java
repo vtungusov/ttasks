@@ -101,8 +101,7 @@ public class FileWorker {
     private Function<SorterData, Future<?>> createAndSubmitTask(Order order, ExecutorService executor) {
         return sorterData -> {
             try {
-                String postfix = POSTFIX_DELIMITER + sorterData.getName();
-                String outWithPostfix = addPostfix(order.getOutputFileName(), postfix);
+                String outWithPostfix = addPostfix(order, sorterData);
                 checkOutputFile(outWithPostfix);
                 return executor.submit(() -> {
                     try {
@@ -131,8 +130,10 @@ public class FileWorker {
         };
     }
 
-    private String addPostfix(String base, String postfix) {
-        String result = base;
+    private String addPostfix(Order order, SorterData sorterData) {
+        String base = order.getOutputFileName();
+        String postfix = POSTFIX_DELIMITER + FilenameUtils.getExtension(sorterData.getName());
+        String result = base + postfix;
         if (base.contains(EXTENSION_DELIMITER)) {
             result = FilenameUtils.getBaseName(base) + postfix + EXTENSION_DELIMITER + FilenameUtils.getExtension(base);
         }
