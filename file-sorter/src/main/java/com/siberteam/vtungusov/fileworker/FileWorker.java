@@ -49,14 +49,18 @@ public class FileWorker {
         Map<SorterData, Future<?>> futureMap = order.getSortersDataSet().parallelStream()
                 .collect(getSubmittedTasks(order, executorService));
         futureMap.entrySet().parallelStream()
-                .forEach(setTimeOut());
+                .forEach(waitResult());
         executorService.shutdown();
     }
 
-    private void sort(Order order, SorterData sorterData, String outFileName) throws IOException {
-        Stream<String> prepareData = getPreparedData(order.getInputFileName());
-        Stream<String> sortedStream = getSortedWords(prepareData, order, sorterData);
-        saveToFile(outFileName, sortedStream);
+    private void sort(Order order, SorterData sorterData, String outFileName) {
+        try {
+            Stream<String> prepareData = getPreparedData(order.getInputFileName());
+            Stream<String> sortedStream = getSortedWords(prepareData, order, sorterData);
+            saveToFile(outFileName, sortedStream);
+        } catch (IOException e) {
+            throw new FileIOException(e.getMessage());
+        }
     }
 
     private void saveToFile(String outFileName, Stream<String> stringStream) {
@@ -103,20 +107,14 @@ public class FileWorker {
             try {
                 String outWithPostfix = addPostfix(order, sorterData);
                 checkOutputFile(outWithPostfix);
-                return executor.submit(() -> {
-                    try {
-                        sort(order, sorterData, outWithPostfix);
-                    } catch (IOException e) {
-                        throw new FileIOException(e.getMessage());
-                    }
-                });
+                return executor.submit(() -> sort(order, sorterData, outWithPostfix));
             } catch (IOException e) {
                 throw new FileIOException(e.getMessage());
             }
         };
     }
 
-    private Consumer<Map.Entry<SorterData, Future<?>>> setTimeOut() {
+    private Consumer<Map.Entry<SorterData, Future<?>>> waitResult() {
         return o -> {
             try {
                 o.getValue().get(TIMEOUT_VALUE, TIMEOUT_UNIT);
