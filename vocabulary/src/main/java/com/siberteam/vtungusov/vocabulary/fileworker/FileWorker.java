@@ -35,6 +35,7 @@ public class FileWorker {
         Files.lines(Paths.get(order.getInputFileName()))
                 .filter(validateURL())
                 .map(convertToURL())
+                .parallel()
                 .forEach(collectWord());
         saveToFile(order.getOutputFileName(), vocabulary.stream());
     }
