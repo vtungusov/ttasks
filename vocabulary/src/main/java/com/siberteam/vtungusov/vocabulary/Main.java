@@ -17,9 +17,7 @@ public class Main {
         try {
             uiManager.handleOptions(args);
             FileWorker fileWorker = new FileWorker();
-
-            fileWorker.createVocabulary(new Order(uiManager.getInputFileName(),
-                    uiManager.getOutputFileName()));
+            fileWorker.createVocabulary(new Order(uiManager.getInputFileName(), uiManager.getOutputFileName()));
             System.out.println(SUCCESSFULLY_FINISHED);
         } catch (IOException e) {
             if (e.getMessage() != null) {
