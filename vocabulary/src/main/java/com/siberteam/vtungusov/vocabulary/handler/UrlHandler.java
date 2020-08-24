@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class UrlHandler {
     public static final int TARGET_WORD_LENGTH = 3;
@@ -25,14 +24,13 @@ public class UrlHandler {
 
     public void collectWords(URL url) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
-            Set<String> wordSet = reader.lines()
+            reader.lines()
                     .map(s -> s.split(STRING_SPLIT_REGEX))
                     .flatMap(Arrays::stream)
                     .filter(byLength())
                     .filter(notNumber())
                     .map(String::toLowerCase)
-                    .collect(Collectors.toSet());
-            vocabulary.addAll(wordSet);
+                    .forEach(vocabulary::add);
         } catch (IOException e) {
             vocabulary.addAll(Collections.emptySet());
             throw new ThreadException(BAD_URL + url);
