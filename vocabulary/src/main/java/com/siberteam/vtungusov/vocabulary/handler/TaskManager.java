@@ -5,6 +5,8 @@ import com.siberteam.vtungusov.vocabulary.exception.ThreadException;
 import com.siberteam.vtungusov.vocabulary.model.Order;
 import com.siberteam.vtungusov.vocabulary.util.FileUtil;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -30,7 +32,9 @@ public class TaskManager {
     public static final int TIMEOUT_VALUE = 1;
     public static final TimeUnit TIMEOUT_UNIT = TimeUnit.MINUTES;
     public static final int LOAD_FACTOR = 4;
+    public static final String THREAD_SUCCESS = "Collected words from ";
 
+    private final Logger logger = LoggerFactory.getLogger(TaskManager.class);
     private final Set<String> vocabulary = new ConcurrentSkipListSet<>();
 
     public void collectVocabulary(Order order) throws IOException {
@@ -79,7 +83,8 @@ public class TaskManager {
 
     private Function<URL, Future<?>> createAndSubmitTask(ExecutorService executor) {
         return url ->
-                executor.submit(() -> new UrlHandler(vocabulary).collectWords(url));
+                CompletableFuture.runAsync(() -> new UrlHandler(vocabulary).collectWords(url), executor)
+                        .thenAccept(result -> logger.info(THREAD_SUCCESS + url));
     }
 
     private void saveToFile(String outFileName, Stream<String> stringStream) {
