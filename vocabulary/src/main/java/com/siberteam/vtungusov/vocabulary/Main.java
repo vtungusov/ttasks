@@ -1,7 +1,7 @@
 package com.siberteam.vtungusov.vocabulary;
 
 import com.siberteam.vtungusov.vocabulary.exception.BadArgumentsException;
-import com.siberteam.vtungusov.vocabulary.fileworker.FileWorker;
+import com.siberteam.vtungusov.vocabulary.handler.TaskManager;
 import com.siberteam.vtungusov.vocabulary.model.Order;
 import com.siberteam.vtungusov.vocabulary.ui.UIManager;
 
@@ -16,8 +16,8 @@ public class Main {
         UIManager uiManager = new UIManager();
         try {
             uiManager.handleOptions(args);
-            FileWorker fileWorker = new FileWorker();
-            fileWorker.createVocabulary(new Order(uiManager.getInputFileName(), uiManager.getOutputFileName()));
+            TaskManager taskManager = new TaskManager();
+            taskManager.collectVocabulary(new Order(uiManager.getInputFileName(), uiManager.getOutputFileName()));
             System.out.println(SUCCESSFULLY_FINISHED);
         } catch (IOException e) {
             if (e.getMessage() != null) {
@@ -27,6 +27,8 @@ public class Main {
             if (e.getMessage() != null) {
                 System.out.println(e.getMessage());
             }
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
         }
     }
 }
