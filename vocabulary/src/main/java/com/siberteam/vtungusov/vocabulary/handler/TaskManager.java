@@ -43,7 +43,7 @@ public class TaskManager {
         ExecutorService executor = Executors.newFixedThreadPool(
                 Runtime.getRuntime().availableProcessors() * LOAD_FACTOR);
         getSubmittedTasks(order, executor)
-                .entrySet().parallelStream()
+                .entrySet()
                 .forEach(waitResult());
         executor.shutdown();
     }
@@ -54,13 +54,12 @@ public class TaskManager {
             futureMap = stream
                     .filter(validateString())
                     .map(convertToURL())
-                    .parallel()
-                    .collect(toFutureMap(executor));
+                    .collect(getFutures(executor));
         }
         return futureMap;
     }
 
-    private Collector<URL, ?, Map<URL, Future<?>>> toFutureMap(ExecutorService executor) {
+    private Collector<URL, ?, Map<URL, Future<?>>> getFutures(ExecutorService executor) {
         return Collectors.toMap(url -> url, createAndSubmitTask(executor), (o, o2) -> o2);
     }
 
