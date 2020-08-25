@@ -12,15 +12,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,10 +26,19 @@ public class TaskManager {
     public static final String WRITE_ERROR = "Error during file writing ";
     public static final String THREAD_SUCCESS = "Collected words from ";
     public static final int QUEUE_CAPACITY = 300;
+    public static final String TIMED_OUT = "Timeout after ";
+    private static final int TIMEOUT_VALUE = 1;
+    private static final TimeUnit TIMEOUT_UNIT = TimeUnit.MINUTES;
 
     private final BlockingQueue<String> queue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
     private final Logger logger = LoggerFactory.getLogger(TaskManager.class);
     private final Set<String> vocabulary = new ConcurrentSkipListSet<>();
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1
+            , r -> {
+                Thread thread = new Thread();
+                thread.setDaemon(true);
+                return thread;
+            });
 
     public void collectVocabulary(Order order) throws IOException {
         validateFiles(order);
@@ -42,33 +47,55 @@ public class TaskManager {
     }
 
     private void collectWordsFromULRs(Order order) throws IOException {
-        Map<URL, CompletableFuture<?>> futures = getSubmittedTasks(order);
-        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.values().toArray(new CompletableFuture[0]));
-        while (!allOf.isDone()) {
+        List<CompletableFuture<?>> futures = getSubmittedTasks(order);
+        CompletableFuture<Void> allOfFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        allOfFuture.thenApply(aVoid -> queue.drainTo(vocabulary));
+        while (!allOfFuture.isDone()) {
             queue.drainTo(vocabulary);
         }
         queue.drainTo(vocabulary);
     }
 
-    private Map<URL, CompletableFuture<?>> getSubmittedTasks(Order order) throws IOException {
-        Map<URL, CompletableFuture<?>> futureMap;
+    private List<CompletableFuture<?>> getSubmittedTasks(Order order) throws IOException {
+        List<CompletableFuture<?>> futureMap;
         try (Stream<String> stream = Files.lines(Paths.get(order.getInputFileName()))) {
             futureMap = stream
                     .filter(validateString())
                     .map(convertToURL())
-                    .collect(getFutures());
+                    .map(createAndSubmitTask())
+                    .collect(Collectors.toList());
         }
         return futureMap;
     }
 
-    private Collector<URL, ?, Map<URL, CompletableFuture<?>>> getFutures() {
-        return Collectors.toMap(url -> url, createAndSubmitTask(), (o, o2) -> o2);
-    }
-
     private Function<URL, CompletableFuture<?>> createAndSubmitTask() {
         return url ->
-                CompletableFuture.runAsync(() -> new UrlHandler(queue).collectWords(url))
-                        .thenAccept(result -> logger.info(THREAD_SUCCESS + url));
+        {
+            CompletableFuture<Void> future = addTimeOut(CompletableFuture.supplyAsync(() -> {
+                new UrlHandler(queue).collectWords(url);
+                return null;
+            }));
+            return future
+                    .thenAccept(result -> logger.info(THREAD_SUCCESS + url))
+                    .exceptionally(throwable -> {
+                        logger.error(throwable.getMessage(), throwable);
+                        return null;
+                    });
+        };
+    }
+
+    private <T> CompletableFuture<T> failAfter() {
+        final CompletableFuture<T> promise = new CompletableFuture<>();
+        scheduler.schedule(() -> {
+            final TimeoutException ex = new TimeoutException(TIMED_OUT + TIMEOUT_VALUE + " " + TIMEOUT_UNIT);
+            return promise.completeExceptionally(ex);
+        }, TIMEOUT_VALUE, TIMEOUT_UNIT);
+        return promise;
+    }
+
+    private <T> CompletableFuture<T> addTimeOut(CompletableFuture<T> future) {
+        final CompletableFuture<T> timeout = failAfter();
+        return future.applyToEither(timeout, Function.identity());
     }
 
     private void saveToFile(String outFileName, Stream<String> stringStream) {

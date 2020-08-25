@@ -18,6 +18,9 @@ public class UrlHandler {
     public static final String BAD_URL = "Malformed URL: ";
     public static final String QUEUE_OVERFLOW = "Queue overflow, missing element. Increase queue capacity or handler algorithm";
     private static final String STRING_SPLIT_REGEX = "[[^ЁёА-я]]";
+    private static final TimeUnit TIME_UNIT = TimeUnit.MICROSECONDS;
+    private static final int TIMEOUT = 10;
+
     private final Logger log = LoggerFactory.getLogger(UrlHandler.class);
     private final BlockingQueue<String> queue;
 
@@ -50,7 +53,7 @@ public class UrlHandler {
 
     private void moveToQueue(String e) {
         try {
-            queue.offer(e, 10, TimeUnit.MILLISECONDS);
+            queue.offer(e, TIMEOUT, TIME_UNIT);
         } catch (InterruptedException interruptedException) {
             log.error(QUEUE_OVERFLOW);
         }
