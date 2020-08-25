@@ -31,7 +31,6 @@ public class TaskManager {
     public static final String TIMED_OUT = "Task timed out";
     public static final int TIMEOUT_VALUE = 1;
     public static final TimeUnit TIMEOUT_UNIT = TimeUnit.MINUTES;
-    public static final int LOAD_FACTOR = 4;
     public static final String THREAD_SUCCESS = "Collected words from ";
 
     private final Logger logger = LoggerFactory.getLogger(TaskManager.class);
@@ -44,27 +43,24 @@ public class TaskManager {
     }
 
     private void collectWordsFromULRs(Order order) throws IOException {
-        ExecutorService executor = Executors.newFixedThreadPool(
-                Runtime.getRuntime().availableProcessors() * LOAD_FACTOR);
-        getSubmittedTasks(order, executor)
+        getSubmittedTasks(order)
                 .entrySet()
                 .forEach(waitResult());
-        executor.shutdown();
     }
 
-    private Map<URL, Future<?>> getSubmittedTasks(Order order, ExecutorService executor) throws IOException {
+    private Map<URL, Future<?>> getSubmittedTasks(Order order) throws IOException {
         Map<URL, Future<?>> futureMap;
         try (Stream<String> stream = Files.lines(Paths.get(order.getInputFileName()))) {
             futureMap = stream
                     .filter(validateString())
                     .map(convertToURL())
-                    .collect(getFutures(executor));
+                    .collect(getFutures());
         }
         return futureMap;
     }
 
-    private Collector<URL, ?, Map<URL, Future<?>>> getFutures(ExecutorService executor) {
-        return Collectors.toMap(url -> url, createAndSubmitTask(executor), (o, o2) -> o2);
+    private Collector<URL, ?, Map<URL, Future<?>>> getFutures() {
+        return Collectors.toMap(url -> url, createAndSubmitTask(), (o, o2) -> o2);
     }
 
     private Consumer<Map.Entry<URL, Future<?>>> waitResult() {
@@ -81,9 +77,9 @@ public class TaskManager {
         };
     }
 
-    private Function<URL, Future<?>> createAndSubmitTask(ExecutorService executor) {
+    private Function<URL, Future<?>> createAndSubmitTask() {
         return url ->
-                CompletableFuture.runAsync(() -> new UrlHandler(vocabulary).collectWords(url), executor)
+                CompletableFuture.runAsync(() -> new UrlHandler(vocabulary).collectWords(url))
                         .thenAccept(result -> logger.info(THREAD_SUCCESS + url));
     }
 
