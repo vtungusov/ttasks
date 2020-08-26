@@ -48,10 +48,9 @@ public class WordsCollector {
 
     private Function<URL, CompletableFuture<?>> createAndSubmitTask() {
         return url ->
-                addTimeOut(CompletableFuture.supplyAsync(() -> {
-                    new UrlHandler(queue).collectWords(url);
-                    return null;
-                }))
+                CompletableFuture
+                        .runAsync(() -> new UrlHandler(queue).collectWords(url))
+                        .applyToEither(failAfter(), Function.identity())
                         .thenAccept(result -> logger.info(THREAD_SUCCESS + url))
                         .exceptionally(throwable -> {
                             logger.error(throwable.getCause().getMessage() + url);
@@ -66,10 +65,5 @@ public class WordsCollector {
             return promise.completeExceptionally(ex);
         }, TIMEOUT_VALUE, TIMEOUT_UNIT);
         return promise;
-    }
-
-    private <T> CompletableFuture<T> addTimeOut(CompletableFuture<T> future) {
-        final CompletableFuture<T> timeout = failAfter();
-        return future.applyToEither(timeout, Function.identity());
     }
 }
