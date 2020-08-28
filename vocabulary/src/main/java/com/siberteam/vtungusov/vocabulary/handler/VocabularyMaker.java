@@ -1,9 +1,9 @@
 package com.siberteam.vtungusov.vocabulary.handler;
 
 import com.siberteam.vtungusov.vocabulary.exception.FileIOException;
-import com.siberteam.vtungusov.vocabulary.exception.ThreadException;
 import com.siberteam.vtungusov.vocabulary.model.Environment;
 import com.siberteam.vtungusov.vocabulary.model.Order;
+import com.siberteam.vtungusov.vocabulary.mqbroker.MqBroker;
 import com.siberteam.vtungusov.vocabulary.util.FileUtil;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.slf4j.Logger;
@@ -26,16 +26,16 @@ import java.util.stream.Stream;
 import static com.siberteam.vtungusov.vocabulary.handler.UrlHandler.BAD_URL;
 
 public class VocabularyMaker {
+    public static final String THREAD_INTERRUPT = "Thread execution was interrupted while waiting";
+    public static final String ERROR_DURING_COLLECTING = "Some error during vocabulary collecting";
+    public static final String SAVED = "File was saved as";
     private static final String WRITE_ERROR = "Error during file writing ";
     private static final int QUEUE_CAPACITY = 300;
-    private static final String THREAD_SUCCESS = "Collected words from ";
-    public static final String THREAD_INTERRUPT = "Thread execution was interrupted while waiting";
-    private static final int TIMEOUT_VALUE = 1;
-    private static final TimeUnit TIMEOUT_UNIT = TimeUnit.MINUTES;
-    private static final String TIMED_OUT = "Timeout after " + TIMEOUT_VALUE + " " + TIMEOUT_UNIT + " at ";
+    private static final String THREAD_SUCCESS = "Collected words from";
+    private static final int TIMEOUT_VALUE = 10;
+    private static final TimeUnit TIMEOUT_UNIT = TimeUnit.SECONDS;
+    private static final String TIMED_OUT = "Timeout after " + TIMEOUT_VALUE + " " + TIMEOUT_UNIT + " at";
     private static final int COLLECTORS_AMOUNT = 1;
-    public static final String ERROR_DURING_COLLECTING = "Some error during vocabulary collecting";
-
     private final BlockingQueue<String> queue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
     private final Set<String> vocabulary = new ConcurrentSkipListSet<>();
     private final Logger logger = LoggerFactory.getLogger(VocabularyMaker.class);
@@ -45,18 +45,18 @@ public class VocabularyMaker {
                 thread.setDaemon(true);
                 return thread;
             });
-    private final CountDownLatch consumersDoneSignal = new CountDownLatch(COLLECTORS_AMOUNT);
-    private CountDownLatch producersDoneSignal;
+    private final MqBroker mqBroker = new MqBroker();
 
     public void collectVocabulary(Order order) throws IOException {
         try {
             validateFiles(order);
             List<URL> urls = initLatchAndGetURLs(order.getInputFileName());
-            runWordsCollectors();
-            runUrlHandlers(urls);
-            consumersDoneSignal.await();
-        } catch (InterruptedException e) {
-            throw new ThreadException(THREAD_INTERRUPT);
+            List<CompletableFuture<Void>> collectorsFutures = runWordsCollectors();
+            List<CompletableFuture<Void>> urlHandlersFutures = runUrlHandlers(urls);
+            CompletableFuture.allOf(urlHandlersFutures.toArray(new CompletableFuture[0]))
+                    .thenAccept(aVoid -> collectorsFutures
+                            .forEach(future -> future.cancel(true)))
+                    .join();
         } finally {
             saveToFile(order.getOutputFileName(), vocabulary.stream());
         }
@@ -64,38 +64,36 @@ public class VocabularyMaker {
 
     private List<URL> initLatchAndGetURLs(String fileName) throws IOException {
         try (Stream<String> lines = Files.lines(Paths.get(fileName))) {
-            List<URL> urls = lines
+            return lines
                     .filter(validateString())
                     .map(convertToURL())
                     .collect(Collectors.toList());
-            producersDoneSignal = new CountDownLatch(urls.size());
-            return urls;
         }
     }
 
-    private void runWordsCollectors() {
-        Environment environment = new Environment(queue, vocabulary, producersDoneSignal);
-        IntStream
-                .range(0, VocabularyMaker.COLLECTORS_AMOUNT)
-                .forEach(n -> CompletableFuture
+    private List<CompletableFuture<Void>> runWordsCollectors() {
+        Environment environment = new Environment(queue, vocabulary, mqBroker);
+        return IntStream.range(0, VocabularyMaker.COLLECTORS_AMOUNT)
+                .mapToObj(n -> CompletableFuture
                         .runAsync(() -> new WordsCollector(environment).collectWords())
                         .exceptionally(throwable -> {
-                            logger.error(ERROR_DURING_COLLECTING);
+                            logger.error("{} {}", ERROR_DURING_COLLECTING, throwable);
                             return null;
-                        })
-                        .thenAccept(t -> consumersDoneSignal.countDown()));
+                        }))
+                .collect(Collectors.toList());
     }
 
-    public void runUrlHandlers(List<URL> urlList) {
-        urlList.forEach(url -> CompletableFuture
-                .runAsync(() -> new UrlHandler(queue).collectWords(url))
-                .applyToEither(failAfter(), Function.identity())
-                .thenAccept(result -> logger.info("{} {}", THREAD_SUCCESS, url))
-                .exceptionally(throwable -> {
-                    logger.error("{} {}", throwable.getCause().getMessage(), url);
-                    return null;
-                })
-                .thenAccept(t -> producersDoneSignal.countDown()));
+    public List<CompletableFuture<Void>> runUrlHandlers(List<URL> urlList) {
+        return urlList.stream()
+                .map(url -> CompletableFuture
+                        .runAsync(() -> new UrlHandler(queue).collectWords(url, mqBroker))
+                        .applyToEither(failAfter(), Function.identity())
+                        .thenAccept(result -> logger.info("{} {}", THREAD_SUCCESS, url))
+                        .exceptionally(throwable -> {
+                            logger.error("{} {}", throwable.getCause().getMessage(), url);
+                            return null;
+                        }))
+                .collect(Collectors.toList());
     }
 
     private <T> CompletableFuture<T> failAfter() {
@@ -110,6 +108,7 @@ public class VocabularyMaker {
     private void saveToFile(String outFileName, Stream<String> stringStream) {
         try {
             Files.write(Paths.get(outFileName), (Iterable<String>) stringStream::iterator);
+            logger.info("{} {}", SAVED, outFileName);
         } catch (IOException e) {
             throw new FileIOException(WRITE_ERROR + outFileName);
         }
@@ -133,7 +132,11 @@ public class VocabularyMaker {
     private Predicate<String> validateString() {
         return s -> {
             UrlValidator validator = new UrlValidator();
-            return validator.isValid(s);
+            boolean valid = validator.isValid(s);
+            if (!valid) {
+                logger.warn("{} {}", BAD_URL, s);
+            }
+            return valid;
         };
     }
 }

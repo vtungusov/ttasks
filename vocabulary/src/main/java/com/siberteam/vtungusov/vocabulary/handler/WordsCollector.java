@@ -10,9 +10,11 @@ public class WordsCollector {
     }
 
     public void collectWords() {
-        do {
+        while (true) {
+            env.getMqBroker().waitData();
             env.getQueue().drainTo(env.getVocabulary());
+            env.getMqBroker().sayNotFull();
+            env.getMqBroker().sayEmpty();
         }
-        while (env.getDoneSignal().getCount() > 0);
     }
 }

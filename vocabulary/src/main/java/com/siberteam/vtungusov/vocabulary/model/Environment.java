@@ -1,19 +1,19 @@
 package com.siberteam.vtungusov.vocabulary.model;
 
+import com.siberteam.vtungusov.vocabulary.mqbroker.MqBroker;
+
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.locks.Condition;
 
 public class Environment {
     private final BlockingQueue<String> queue;
     private final Set<String> vocabulary;
-    private final CountDownLatch doneSignal;
+    private final MqBroker mqBroker;
 
-    public Environment(BlockingQueue<String> queue, Set<String> vocabulary, CountDownLatch doneSignal) {
+    public Environment(BlockingQueue<String> queue, Set<String> vocabulary, MqBroker mqBroker) {
         this.queue = queue;
         this.vocabulary = vocabulary;
-        this.doneSignal = doneSignal;
+        this.mqBroker = mqBroker;
     }
 
     public BlockingQueue<String> getQueue() {
@@ -24,7 +24,7 @@ public class Environment {
         return vocabulary;
     }
 
-    public CountDownLatch getDoneSignal() {
-        return doneSignal;
+    public MqBroker getMqBroker() {
+        return mqBroker;
     }
 }
