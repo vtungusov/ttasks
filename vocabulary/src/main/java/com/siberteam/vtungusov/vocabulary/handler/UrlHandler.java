@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 public class UrlHandler {
     public static final int TARGET_WORD_LENGTH = 3;
     public static final String BAD_URL = "Malformed URL: ";
-    public static final String QUEUE_OVERFLOW = "Queue overflow. Increase queue capacity or handlers count";
+    public static final String QUEUE_OVERFLOW = "Queue overflow. Element was missed. Increase queue capacity or handlers count";
     private static final String STRING_SPLIT_REGEX = "[[^ЁёА-я]]";
     private static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
     private static final int TIMEOUT = 1;
@@ -57,7 +57,6 @@ public class UrlHandler {
             boolean persist = queue.offer(e, TIMEOUT, TIME_UNIT);
             if (!persist) {
                 log.error(QUEUE_OVERFLOW);
-                moveToQueue(e);
             }
         } catch (InterruptedException interruptedException) {
             log.error(OFFERING_INTERRUPTED);
