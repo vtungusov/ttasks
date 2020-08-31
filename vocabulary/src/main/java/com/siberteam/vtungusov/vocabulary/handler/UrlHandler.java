@@ -29,6 +29,7 @@ public class UrlHandler {
     }
 
     public void collectWords(URL url, MqBroker mqBroker) {
+        mqBroker.addProducer(this);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
             reader.lines()
                     .map(s -> s.split(STRING_SPLIT_REGEX))
@@ -39,6 +40,8 @@ public class UrlHandler {
                     .forEach(e -> moveToQueue(e, mqBroker));
         } catch (IOException e) {
             throw new ThreadException(BAD_URL + url);
+        } finally {
+            mqBroker.removeProducer(this);
         }
     }
 

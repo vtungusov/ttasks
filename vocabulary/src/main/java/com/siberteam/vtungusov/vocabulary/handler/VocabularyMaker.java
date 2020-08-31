@@ -1,6 +1,5 @@
 package com.siberteam.vtungusov.vocabulary.handler;
 
-import com.siberteam.vtungusov.vocabulary.exception.FileIOException;
 import com.siberteam.vtungusov.vocabulary.model.Environment;
 import com.siberteam.vtungusov.vocabulary.model.Order;
 import com.siberteam.vtungusov.vocabulary.mqbroker.MqBroker;
@@ -28,8 +27,7 @@ import static com.siberteam.vtungusov.vocabulary.handler.UrlHandler.BAD_URL;
 public class VocabularyMaker {
     public static final String THREAD_INTERRUPT = "Thread execution was interrupted while waiting";
     public static final String ERROR_DURING_COLLECTING = "Some error during vocabulary collecting";
-    public static final String SAVED = "File was saved as";
-    private static final String WRITE_ERROR = "Error during file writing ";
+
     private static final int QUEUE_CAPACITY = 300;
     private static final String THREAD_SUCCESS = "Collected words from";
     private static final int TIMEOUT_VALUE = 10;
@@ -48,21 +46,14 @@ public class VocabularyMaker {
     private final MqBroker mqBroker = new MqBroker();
 
     public void collectVocabulary(Order order) throws IOException {
-        try {
-            validateFiles(order);
-            List<URL> urls = initLatchAndGetURLs(order.getInputFileName());
-            List<CompletableFuture<Void>> collectorsFutures = runWordsCollectors();
-            List<CompletableFuture<Void>> urlHandlersFutures = runUrlHandlers(urls);
-            CompletableFuture.allOf(urlHandlersFutures.toArray(new CompletableFuture[0]))
-                    .thenAccept(aVoid -> collectorsFutures
-                            .forEach(future -> future.cancel(true)))
-                    .join();
-        } finally {
-            saveToFile(order.getOutputFileName(), vocabulary.stream());
-        }
+        validateFiles(order);
+        List<CompletableFuture<Void>> collectorsFutures = runWordsCollectors(order);
+        runUrlHandlers(order);
+        CompletableFuture.allOf(collectorsFutures.toArray(new CompletableFuture[0]))
+                .join();
     }
 
-    private List<URL> initLatchAndGetURLs(String fileName) throws IOException {
+    private List<URL> getURLs(String fileName) throws IOException {
         try (Stream<String> lines = Files.lines(Paths.get(fileName))) {
             return lines
                     .filter(validateString())
@@ -71,8 +62,8 @@ public class VocabularyMaker {
         }
     }
 
-    private List<CompletableFuture<Void>> runWordsCollectors() {
-        Environment environment = new Environment(queue, vocabulary, mqBroker);
+    private List<CompletableFuture<Void>> runWordsCollectors(Order order) {
+        Environment environment = new Environment(queue, vocabulary, mqBroker, order.getOutputFileName());
         return IntStream.range(0, VocabularyMaker.COLLECTORS_AMOUNT)
                 .mapToObj(n -> CompletableFuture
                         .runAsync(() -> new WordsCollector(environment).collectWords())
@@ -83,17 +74,16 @@ public class VocabularyMaker {
                 .collect(Collectors.toList());
     }
 
-    public List<CompletableFuture<Void>> runUrlHandlers(List<URL> urlList) {
-        return urlList.stream()
-                .map(url -> CompletableFuture
+    public void runUrlHandlers(Order order) throws IOException {
+        getURLs(order.getInputFileName())
+                .forEach(url -> CompletableFuture
                         .runAsync(() -> new UrlHandler(queue).collectWords(url, mqBroker))
                         .applyToEither(failAfter(), Function.identity())
                         .thenAccept(result -> logger.info("{} {}", THREAD_SUCCESS, url))
                         .exceptionally(throwable -> {
                             logger.error("{} {}", throwable.getCause().getMessage(), url);
                             return null;
-                        }))
-                .collect(Collectors.toList());
+                        }));
     }
 
     private <T> CompletableFuture<T> failAfter() {
@@ -103,15 +93,6 @@ public class VocabularyMaker {
             return promise.completeExceptionally(ex);
         }, TIMEOUT_VALUE, TIMEOUT_UNIT);
         return promise;
-    }
-
-    private void saveToFile(String outFileName, Stream<String> stringStream) {
-        try {
-            Files.write(Paths.get(outFileName), (Iterable<String>) stringStream::iterator);
-            logger.info("{} {}", SAVED, outFileName);
-        } catch (IOException e) {
-            throw new FileIOException(WRITE_ERROR + outFileName);
-        }
     }
 
     private void validateFiles(Order order) throws IOException {

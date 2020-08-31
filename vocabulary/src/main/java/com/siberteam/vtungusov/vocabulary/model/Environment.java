@@ -9,11 +9,13 @@ public class Environment {
     private final BlockingQueue<String> queue;
     private final Set<String> vocabulary;
     private final MqBroker mqBroker;
+    private final String outputFileName;
 
-    public Environment(BlockingQueue<String> queue, Set<String> vocabulary, MqBroker mqBroker) {
+    public Environment(BlockingQueue<String> queue, Set<String> vocabulary, MqBroker mqBroker, String outputFileName) {
         this.queue = queue;
         this.vocabulary = vocabulary;
         this.mqBroker = mqBroker;
+        this.outputFileName = outputFileName;
     }
 
     public BlockingQueue<String> getQueue() {
@@ -26,5 +28,9 @@ public class Environment {
 
     public MqBroker getMqBroker() {
         return mqBroker;
+    }
+
+    public String getOutputFileName() {
+        return outputFileName;
     }
 }
