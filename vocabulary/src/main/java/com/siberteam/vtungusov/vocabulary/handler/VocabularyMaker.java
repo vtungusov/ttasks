@@ -1,8 +1,7 @@
 package com.siberteam.vtungusov.vocabulary.handler;
 
-import com.siberteam.vtungusov.vocabulary.model.Environment;
+import com.siberteam.vtungusov.vocabulary.broker.WordsBroker;
 import com.siberteam.vtungusov.vocabulary.model.Order;
-import com.siberteam.vtungusov.vocabulary.mqbroker.MqBroker;
 import com.siberteam.vtungusov.vocabulary.util.FileUtil;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.slf4j.Logger;
@@ -25,16 +24,14 @@ import java.util.stream.Stream;
 import static com.siberteam.vtungusov.vocabulary.handler.UrlHandler.BAD_URL;
 
 public class VocabularyMaker {
-    public static final String THREAD_INTERRUPT = "Thread execution was interrupted while waiting";
-    public static final String ERROR_DURING_COLLECTING = "Some error during vocabulary collecting";
 
-    private static final int QUEUE_CAPACITY = 300;
+    private static final String ERROR_DURING_COLLECTING = "Some error during vocabulary collecting";
     private static final String THREAD_SUCCESS = "Collected words from";
     private static final int TIMEOUT_VALUE = 10;
     private static final TimeUnit TIMEOUT_UNIT = TimeUnit.SECONDS;
     private static final String TIMED_OUT = "Timeout after " + TIMEOUT_VALUE + " " + TIMEOUT_UNIT + " at";
-    private static final int COLLECTORS_AMOUNT = 1;
-    private final BlockingQueue<String> queue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
+    private static final int COLLECTORS_AMOUNT = 2;
+
     private final Set<String> vocabulary = new ConcurrentSkipListSet<>();
     private final Logger logger = LoggerFactory.getLogger(VocabularyMaker.class);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1
@@ -43,13 +40,12 @@ public class VocabularyMaker {
                 thread.setDaemon(true);
                 return thread;
             });
-    private final MqBroker mqBroker = new MqBroker();
+    private final WordsBroker broker = new WordsBroker();
 
     public void collectVocabulary(Order order) throws IOException {
         validateFiles(order);
-        List<CompletableFuture<Void>> collectorsFutures = runWordsCollectors(order);
         runUrlHandlers(order);
-        CompletableFuture.allOf(collectorsFutures.toArray(new CompletableFuture[0]))
+        CompletableFuture.allOf(runWordsCollectors(order).toArray(new CompletableFuture[0]))
                 .join();
     }
 
@@ -63,10 +59,9 @@ public class VocabularyMaker {
     }
 
     private List<CompletableFuture<Void>> runWordsCollectors(Order order) {
-        Environment environment = new Environment(queue, vocabulary, mqBroker, order.getOutputFileName());
         return IntStream.range(0, VocabularyMaker.COLLECTORS_AMOUNT)
                 .mapToObj(n -> CompletableFuture
-                        .runAsync(() -> new WordsCollector(environment).collectWords())
+                        .runAsync(() -> new WordsCollector().collectWords(broker, vocabulary, order.getOutputFileName()))
                         .exceptionally(throwable -> {
                             logger.error("{} {}", ERROR_DURING_COLLECTING, throwable);
                             return null;
@@ -77,7 +72,7 @@ public class VocabularyMaker {
     public void runUrlHandlers(Order order) throws IOException {
         getURLs(order.getInputFileName())
                 .forEach(url -> CompletableFuture
-                        .runAsync(() -> new UrlHandler(queue).collectWords(url, mqBroker))
+                        .runAsync(() -> new UrlHandler().collectWords(url, broker))
                         .applyToEither(failAfter(), Function.identity())
                         .thenAccept(result -> logger.info("{} {}", THREAD_SUCCESS, url))
                         .exceptionally(throwable -> {
