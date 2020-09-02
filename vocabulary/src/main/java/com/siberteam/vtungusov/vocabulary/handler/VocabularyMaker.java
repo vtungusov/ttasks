@@ -1,6 +1,8 @@
 package com.siberteam.vtungusov.vocabulary.handler;
 
 import com.siberteam.vtungusov.vocabulary.broker.WordsBroker;
+import com.siberteam.vtungusov.vocabulary.exception.HandlingException;
+import com.siberteam.vtungusov.vocabulary.exception.ThreadException;
 import com.siberteam.vtungusov.vocabulary.model.Order;
 import com.siberteam.vtungusov.vocabulary.util.FileUtil;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -15,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -24,13 +27,12 @@ import java.util.stream.Stream;
 import static com.siberteam.vtungusov.vocabulary.handler.UrlHandler.BAD_URL;
 
 public class VocabularyMaker {
-
-    private static final String ERROR_DURING_COLLECTING = "Some error during vocabulary collecting";
     private static final String THREAD_SUCCESS = "Collected words from";
-    private static final int TIMEOUT_VALUE = 10;
-    private static final TimeUnit TIMEOUT_UNIT = TimeUnit.SECONDS;
+    private static final int TIMEOUT_VALUE = 1;
+    private static final TimeUnit TIMEOUT_UNIT = TimeUnit.MINUTES;
     private static final String TIMED_OUT = "Timeout after " + TIMEOUT_VALUE + " " + TIMEOUT_UNIT + " at";
     private static final int COLLECTORS_AMOUNT = 2;
+    public static final String POISON_PILL = "666";
 
     private final Set<String> vocabulary = new ConcurrentSkipListSet<>();
     private final Logger logger = LoggerFactory.getLogger(VocabularyMaker.class);
@@ -44,41 +46,49 @@ public class VocabularyMaker {
 
     public void collectVocabulary(Order order) throws IOException {
         validateFiles(order);
-        runUrlHandlers(order);
-        CompletableFuture.allOf(runWordsCollectors(order).toArray(new CompletableFuture[0]))
+        List<CompletableFuture<Void>> collectors = runWordsCollectors(order);
+        CompletableFuture.allOf(runUrlHandlers(order).toArray(new CompletableFuture[0]))
+                .thenAccept(stopCollectors())
+                .exceptionally(throwable -> {
+                    ThreadException exception = new ThreadException(throwable.getCause().getMessage());
+                    collectors.forEach(future -> future.completeExceptionally(exception));
+                    return null;
+                });
+        CompletableFuture.allOf(collectors.toArray(new CompletableFuture[0]))
                 .join();
     }
 
-    private List<URL> getURLs(String fileName) throws IOException {
+    private Set<URL> getURLs(String fileName) throws IOException {
         try (Stream<String> lines = Files.lines(Paths.get(fileName))) {
             return lines
                     .filter(validateString())
                     .map(convertToURL())
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet());
         }
     }
 
     private List<CompletableFuture<Void>> runWordsCollectors(Order order) {
         return IntStream.range(0, VocabularyMaker.COLLECTORS_AMOUNT)
                 .mapToObj(n -> CompletableFuture
-                        .runAsync(() -> new WordsCollector().collectWords(broker, vocabulary, order.getOutputFileName()))
-                        .exceptionally(throwable -> {
-                            logger.error("{} {}", ERROR_DURING_COLLECTING, throwable);
-                            return null;
-                        }))
+                        .runAsync(() -> new WordsCollector().collectWords(broker, vocabulary, order.getOutputFileName())))
                 .collect(Collectors.toList());
     }
 
-    public void runUrlHandlers(Order order) throws IOException {
-        getURLs(order.getInputFileName())
-                .forEach(url -> CompletableFuture
+    public List<CompletableFuture<Void>> runUrlHandlers(Order order) throws IOException {
+        return getURLs(order.getInputFileName()).stream()
+                .map(url -> CompletableFuture
                         .runAsync(() -> new UrlHandler().collectWords(url, broker))
                         .applyToEither(failAfter(), Function.identity())
-                        .thenAccept(result -> logger.info("{} {}", THREAD_SUCCESS, url))
-                        .exceptionally(throwable -> {
-                            logger.error("{} {}", throwable.getCause().getMessage(), url);
-                            return null;
-                        }));
+                        .thenAccept(result -> logger.info("{} {}", THREAD_SUCCESS, url)))
+                .collect(Collectors.toList());
+    }
+
+    private Consumer<Void> stopCollectors() {
+        return aVoid -> {
+            for (int i = 0; i < COLLECTORS_AMOUNT; i++) {
+                broker.putWord(POISON_PILL);
+            }
+        };
     }
 
     private <T> CompletableFuture<T> failAfter() {
@@ -110,9 +120,9 @@ public class VocabularyMaker {
             UrlValidator validator = new UrlValidator();
             boolean valid = validator.isValid(s);
             if (!valid) {
-                logger.warn("{} {}", BAD_URL, s);
+                throw new HandlingException(BAD_URL + s);
             }
-            return valid;
+            return true;
         };
     }
 }

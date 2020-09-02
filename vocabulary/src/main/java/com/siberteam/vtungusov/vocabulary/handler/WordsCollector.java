@@ -9,13 +9,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 
-import static com.siberteam.vtungusov.vocabulary.broker.WordsBroker.POISON_PILL;
+import static com.siberteam.vtungusov.vocabulary.handler.VocabularyMaker.POISON_PILL;
 
 public class WordsCollector {
     private static final String SAVED = "File was saved as";
     private static final String WRITE_ERROR = "Error during file writing ";
+
     private final Logger logger = LoggerFactory.getLogger(WordsCollector.class);
 
     public void collectWords(WordsBroker broker, Set<String> vocabulary, String outputFileName) {
@@ -26,20 +28,20 @@ public class WordsCollector {
             }
             vocabulary.add(word);
         } while (true);
-        if (!broker.isFileSaved()) {
-            saveToFile(broker, vocabulary.stream(), outputFileName);
-            broker.setFileSaved();
-        }
-        broker.putWord(POISON_PILL);
+        saveToFile(broker, vocabulary.stream(), outputFileName);
     }
 
-    private synchronized void saveToFile(WordsBroker broker, Stream<String> stringStream, String fileName) {
-        try {
-            Files.write(Paths.get(fileName), (Iterable<String>) stringStream::iterator);
-            logger.info("{} {}", SAVED, fileName);
-            broker.setFileSaved();
-        } catch (IOException e) {
-            throw new FileIOException(WRITE_ERROR + fileName);
+    private void saveToFile(WordsBroker broker, Stream<String> stringStream, String fileName) {
+        Semaphore mutex = broker.getMutex();
+        if (mutex.tryAcquire() && !broker.isFileSaved()) {
+            try {
+                Files.write(Paths.get(fileName), (Iterable<String>) stringStream::iterator);
+                logger.info("{} {}", SAVED, fileName);
+                broker.setFileSaved();
+            } catch (IOException e) {
+                throw new FileIOException(WRITE_ERROR + fileName);
+            }
+            mutex.release();
         }
     }
 }

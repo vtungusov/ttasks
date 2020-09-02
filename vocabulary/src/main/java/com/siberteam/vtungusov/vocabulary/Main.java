@@ -8,8 +8,8 @@ import com.siberteam.vtungusov.vocabulary.ui.UIManager;
 import java.io.IOException;
 
 public class Main {
-    private static final String SUCCESSFULLY_FINISHED = "Program finished" +
-            "\n--------------------------------";
+    private static final String SUCCESSFULLY_FINISHED = "Program successfully finished\nYou can look vocabulary file" +
+            "\n-----------------------------";
     private static final String FILE_READING_ERROR = "Something wrong, file reading error";
 
     public static void main(String[] args) {

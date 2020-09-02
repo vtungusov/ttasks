@@ -1,7 +1,7 @@
 package com.siberteam.vtungusov.vocabulary.handler;
 
 import com.siberteam.vtungusov.vocabulary.broker.WordsBroker;
-import com.siberteam.vtungusov.vocabulary.exception.ThreadException;
+import com.siberteam.vtungusov.vocabulary.exception.HandlingException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,7 +16,6 @@ public class UrlHandler {
     private static final String STRING_SPLIT_REGEX = "[[^ЁёА-я]]";
 
     public void collectWords(URL url, WordsBroker broker) {
-        broker.addProducer(this);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
             reader.lines()
                     .map(s -> s.split(STRING_SPLIT_REGEX))
@@ -26,9 +25,7 @@ public class UrlHandler {
                     .map(String::toLowerCase)
                     .forEach(broker::putWord);
         } catch (IOException e) {
-            throw new ThreadException(BAD_URL + url);
-        } finally {
-            broker.removeProducer(this);
+            throw new HandlingException(BAD_URL + url);
         }
     }
 

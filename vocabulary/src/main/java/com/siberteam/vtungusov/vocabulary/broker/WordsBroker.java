@@ -1,39 +1,30 @@
 package com.siberteam.vtungusov.vocabulary.broker;
 
-import com.siberteam.vtungusov.vocabulary.exception.ThreadException;
-import com.siberteam.vtungusov.vocabulary.handler.UrlHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.siberteam.vtungusov.vocabulary.exception.HandlingException;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class WordsBroker {
-    public static final String QUEUE_OVERFLOW = "Queue overflow. Element was missed. Increase queue capacity or handlers count";
-    public static final String THREAD_INTERRUPT = "Thread execution was interrupted while waiting";
+    public static final String QUEUE_OVERFLOW = "Words queue overflow. Element was missed. Increase queue capacity or handlers count";
+    public static final String THREAD_INTERRUPT = "Thread execution was interrupted";
     public static final String OFFERING_INTERRUPTED = "Offering word for queue was interrupted";
-    public static final String POISON_PILL = "666";
     private static final int QUEUE_CAPACITY = 300;
-    private static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
     private static final int TIMEOUT = 1;
+    private static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
     private final BlockingQueue<String> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
-    private final Logger log = LoggerFactory.getLogger(WordsBroker.class);
-    private final List<UrlHandler> producers = new ArrayList<>();
+    private final Semaphore mutex = new Semaphore(1);
     private Boolean fileSaved = false;
-
-    public WordsBroker() {
-    }
 
     public void putWord(String word) {
         try {
             if (!queue.offer(word, TIMEOUT, TIME_UNIT)) {
-                log.debug(QUEUE_OVERFLOW);
+                throw new HandlingException(QUEUE_OVERFLOW);
             }
         } catch (InterruptedException e) {
-            log.error(OFFERING_INTERRUPTED);
+            throw new HandlingException(OFFERING_INTERRUPTED);
         }
     }
 
@@ -41,19 +32,7 @@ public class WordsBroker {
         try {
             return queue.take();
         } catch (InterruptedException e) {
-            log.error(THREAD_INTERRUPT);
-            throw new ThreadException();
-        }
-    }
-
-    public synchronized void addProducer(UrlHandler producer) {
-        producers.add(producer);
-    }
-
-    public synchronized void removeProducer(UrlHandler producer) {
-        producers.remove(producer);
-        if (producers.isEmpty()) {
-            queue.add(POISON_PILL);
+            throw new HandlingException(THREAD_INTERRUPT);
         }
     }
 
@@ -65,5 +44,9 @@ public class WordsBroker {
 
     public synchronized void setFileSaved() {
         fileSaved = true;
+    }
+
+    public Semaphore getMutex() {
+        return mutex;
     }
 }
