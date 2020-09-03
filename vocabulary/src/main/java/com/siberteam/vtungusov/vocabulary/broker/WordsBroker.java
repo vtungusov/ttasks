@@ -52,4 +52,20 @@ public class WordsBroker {
     public boolean isTimeToEnd() {
         return timeToEnd;
     }
+
+    public void awaitCollectorsFinish() {
+        phaser.awaitAdvance(0);
+    }
+
+    public boolean trySave() {
+        return mutex.tryAcquire();
+    }
+
+    public void registerCollector() {
+        phaser.register();
+    }
+
+    public void unregisterCollector() {
+        phaser.arriveAndDeregister();
+    }
 }

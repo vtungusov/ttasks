@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 
 import static com.siberteam.vtungusov.vocabulary.broker.WordsBroker.THREAD_INTERRUPT;
@@ -22,7 +21,7 @@ public class WordsCollector {
     private final Logger logger = LoggerFactory.getLogger(WordsCollector.class);
 
     public void collectWords(WordsBroker broker, Set<String> vocabulary, String outputFileName) {
-        broker.getPhaser().register();
+        broker.registerCollector();
         String word;
         do {
             word = broker.readWord();
@@ -36,14 +35,13 @@ public class WordsCollector {
                 }
             }
         } while (!broker.isTimeToEnd() || word != null);
-        broker.getPhaser().arriveAndDeregister();
+        broker.unregisterCollector();
         saveToFile(broker, vocabulary.stream(), outputFileName);
     }
 
     private void saveToFile(WordsBroker broker, Stream<String> stringStream, String fileName) {
-        broker.getPhaser().awaitAdvance(0);
-        Semaphore mutex = broker.getMutex();
-        if (mutex.tryAcquire() && !broker.isFileSaved()) {
+        broker.awaitCollectorsFinish();
+        if (broker.trySave() && !broker.isFileSaved()) {
             try {
                 Files.write(Paths.get(fileName), (Iterable<String>) stringStream::iterator);
                 logger.info("{} {}", SAVED, fileName);
@@ -51,7 +49,6 @@ public class WordsCollector {
             } catch (IOException e) {
                 throw new FileIOException(WRITE_ERROR + fileName);
             }
-            mutex.release();
         }
     }
 }
