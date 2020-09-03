@@ -22,8 +22,9 @@ public class WordsCollector {
     private final Logger logger = LoggerFactory.getLogger(WordsCollector.class);
 
     public void collectWords(WordsBroker broker, Set<String> vocabulary, String outputFileName) {
+        String word;
         do {
-            String word = broker.readWord();
+            word = broker.readWord();
             if (word != null) {
                 vocabulary.add(word);
             } else {
@@ -33,7 +34,7 @@ public class WordsCollector {
                     throw new ThreadException(THREAD_INTERRUPT);
                 }
             }
-        } while (!broker.isTimeToEnd());
+        } while (!broker.isTimeToEnd() || word != null);
         saveToFile(broker, vocabulary.stream(), outputFileName);
     }
 
