@@ -17,7 +17,8 @@ public class Main {
         try {
             uiManager.handleOptions(args);
             VocabularyMaker vocabularyMaker = new VocabularyMaker();
-            vocabularyMaker.collectVocabulary(new Order(uiManager.getInputFileName(), uiManager.getOutputFileName()));
+            vocabularyMaker.collectVocabulary(new Order(uiManager.getInputFileName(),
+                    uiManager.getOutputFileName(), uiManager.getCollectorsCount()));
             System.out.println(SUCCESSFULLY_FINISHED);
         } catch (IOException e) {
             if (e.getMessage() != null) {

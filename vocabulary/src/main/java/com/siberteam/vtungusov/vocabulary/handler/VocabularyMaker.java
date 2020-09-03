@@ -31,7 +31,6 @@ public class VocabularyMaker {
     private static final int TIMEOUT_VALUE = 1;
     private static final TimeUnit TIMEOUT_UNIT = TimeUnit.MINUTES;
     private static final String TIMED_OUT = "Timeout after " + TIMEOUT_VALUE + " " + TIMEOUT_UNIT + " at";
-    private static final int COLLECTORS_AMOUNT = 2;
 
     private final Set<String> vocabulary = new ConcurrentSkipListSet<>();
     private final Logger logger = LoggerFactory.getLogger(VocabularyMaker.class);
@@ -45,9 +44,11 @@ public class VocabularyMaker {
 
     public void collectVocabulary(Order order) throws IOException {
         validateFiles(order);
-        List<CompletableFuture<Void>> collectors = runWordsCollectors(order);
-        runUrlHandlers(order, collectors);
+        ExecutorService executor = Executors.newFixedThreadPool(order.getCollectorsCount());
+        List<CompletableFuture<Void>> collectors = runWordsCollectors(order, executor);
+        runUrlHandlers(order, collectors, executor);
         CompletableFuture.allOf(collectors.toArray(new CompletableFuture[0]))
+                .thenAccept(v -> executor.shutdownNow())
                 .join();
     }
 
@@ -60,19 +61,20 @@ public class VocabularyMaker {
         }
     }
 
-    private List<CompletableFuture<Void>> runWordsCollectors(Order order) {
-        return IntStream.range(0, VocabularyMaker.COLLECTORS_AMOUNT)
+    private List<CompletableFuture<Void>> runWordsCollectors(Order order, ExecutorService executor) {
+        return IntStream.range(0, order.getCollectorsCount() + 1)
                 .mapToObj(n -> CompletableFuture
-                        .runAsync(() -> new WordsCollector().collectWords(broker, vocabulary, order.getOutputFileName())))
+                        .runAsync(() -> new WordsCollector().collectWords(broker, vocabulary, order.getOutputFileName()), executor))
                 .collect(Collectors.toList());
     }
 
-    private void runUrlHandlers(Order order, List<CompletableFuture<Void>> collectors) throws IOException {
+    private void runUrlHandlers(Order order, List<CompletableFuture<Void>> collectors, ExecutorService executor) throws IOException {
         CompletableFuture.allOf(getUrlHandlersFutures(order))
                 .thenAccept(stopCollectors())
                 .exceptionally(throwable -> {
                     ThreadException exception = new ThreadException(throwable.getCause().getMessage());
                     collectors.forEach(future -> future.completeExceptionally(exception));
+                    executor.shutdownNow();
                     return null;
                 });
     }
