@@ -1,4 +1,8 @@
-https://en.wikipedia.org/wiki/HTTP_403
-http://javatutor.net/books/tiej/socket
-http://javatutor.net/books/tiej/socket
-https://stackoverflow.com/questions/30616879/java-apache-commons-cli-how-to-handle-options-that-depend-on-each-other
+http://www.gutenberg.org/files/5316/5316-h/5316-h.htm
+http://www.gutenberg.org/cache/epub/37196/pg37196.html
+http://www.gutenberg.org/files/16527/16527-h/16527-h.htm
+http://www.gutenberg.org/files/5316/5316-h/5316-h.htm
+http://www.gutenberg.org/files/30774/30774-h/30774-h.htm
+http://www.gutenberg.org/files/14741/14741-h/14741-h.htm
+http://www.gutenberg.org/files/30774/30774-h/30774-h.htm
+http://www.gutenberg.org/files/30774/30774-h/30774-h.htm
