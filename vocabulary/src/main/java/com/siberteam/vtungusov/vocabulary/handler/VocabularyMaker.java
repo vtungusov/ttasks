@@ -47,13 +47,7 @@ public class VocabularyMaker {
     public void collectVocabulary(Order order) throws IOException {
         validateFiles(order);
         List<CompletableFuture<Void>> collectors = runWordsCollectors(order);
-        CompletableFuture.allOf(runUrlHandlers(order).toArray(new CompletableFuture[0]))
-                .thenAccept(stopCollectors())
-                .exceptionally(throwable -> {
-                    ThreadException exception = new ThreadException(throwable.getCause().getMessage());
-                    collectors.forEach(future -> future.completeExceptionally(exception));
-                    return null;
-                });
+        runUrlHandlers(order, collectors);
         CompletableFuture.allOf(collectors.toArray(new CompletableFuture[0]))
                 .join();
     }
@@ -74,19 +68,30 @@ public class VocabularyMaker {
                 .collect(Collectors.toList());
     }
 
-    public List<CompletableFuture<Void>> runUrlHandlers(Order order) throws IOException {
+    private void runUrlHandlers(Order order, List<CompletableFuture<Void>> collectors) throws IOException {
+        CompletableFuture.allOf(getUrlHandlersFutures(order))
+                .thenAccept(stopCollectors())
+                .exceptionally(throwable -> {
+                    ThreadException exception = new ThreadException(throwable.getCause().getMessage());
+                    collectors.forEach(future -> future.completeExceptionally(exception));
+                    return null;
+                });
+    }
+
+    private CompletableFuture[] getUrlHandlersFutures(Order order) throws IOException {
         return getURLs(order.getInputFileName()).stream()
                 .map(url -> CompletableFuture
                         .runAsync(() -> new UrlHandler().collectWords(url, broker))
                         .applyToEither(failAfter(), Function.identity())
                         .thenAccept(result -> logger.info("{} {}", THREAD_SUCCESS, url)))
-                .collect(Collectors.toList());
+                .toArray(CompletableFuture[]::new);
     }
 
     private Consumer<Void> stopCollectors() {
         return aVoid -> {
             for (int i = 0; i < COLLECTORS_AMOUNT; i++) {
-                broker.putWord(POISON_PILL);
+                broker.putPoison(POISON_PILL);
+                broker.putWord("Found words:");
             }
         };
     }
