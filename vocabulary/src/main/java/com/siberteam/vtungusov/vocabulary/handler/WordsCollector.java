@@ -22,6 +22,7 @@ public class WordsCollector {
     private final Logger logger = LoggerFactory.getLogger(WordsCollector.class);
 
     public void collectWords(WordsBroker broker, Set<String> vocabulary, String outputFileName) {
+        broker.getPhaser().register();
         String word;
         do {
             word = broker.readWord();
@@ -35,10 +36,12 @@ public class WordsCollector {
                 }
             }
         } while (!broker.isTimeToEnd() || word != null);
+        broker.getPhaser().arriveAndDeregister();
         saveToFile(broker, vocabulary.stream(), outputFileName);
     }
 
     private void saveToFile(WordsBroker broker, Stream<String> stringStream, String fileName) {
+        broker.getPhaser().awaitAdvance(0);
         Semaphore mutex = broker.getMutex();
         if (mutex.tryAcquire() && !broker.isFileSaved()) {
             try {

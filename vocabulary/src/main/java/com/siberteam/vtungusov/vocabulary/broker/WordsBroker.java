@@ -4,6 +4,7 @@ import com.siberteam.vtungusov.vocabulary.exception.ThreadException;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.Semaphore;
 
 public class WordsBroker {
@@ -12,6 +13,7 @@ public class WordsBroker {
 
     private final BlockingQueue<String> wordQueue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
     private final Semaphore mutex = new Semaphore(1);
+    private final Phaser phaser = new Phaser();
     private Boolean timeToEnd = false;
     private Boolean fileSaved = false;
 
@@ -41,6 +43,10 @@ public class WordsBroker {
 
     public Semaphore getMutex() {
         return mutex;
+    }
+
+    public Phaser getPhaser() {
+        return phaser;
     }
 
     public boolean isTimeToEnd() {
