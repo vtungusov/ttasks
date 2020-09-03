@@ -32,7 +32,6 @@ public class VocabularyMaker {
     private static final TimeUnit TIMEOUT_UNIT = TimeUnit.MINUTES;
     private static final String TIMED_OUT = "Timeout after " + TIMEOUT_VALUE + " " + TIMEOUT_UNIT + " at";
     private static final int COLLECTORS_AMOUNT = 2;
-    public static final String POISON_PILL = "666";
 
     private final Set<String> vocabulary = new ConcurrentSkipListSet<>();
     private final Logger logger = LoggerFactory.getLogger(VocabularyMaker.class);
@@ -88,12 +87,7 @@ public class VocabularyMaker {
     }
 
     private Consumer<Void> stopCollectors() {
-        return aVoid -> {
-            for (int i = 0; i < COLLECTORS_AMOUNT; i++) {
-                broker.putPoison(POISON_PILL);
-                broker.putWord("Found words:");
-            }
-        };
+        return t -> broker.timeToEnd();
     }
 
     private <T> CompletableFuture<T> failAfter() {
