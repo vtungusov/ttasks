@@ -1,6 +1,7 @@
 package com.siberteam.vtungusov.vocabulary;
 
 import com.siberteam.vtungusov.vocabulary.exception.BadArgumentsException;
+import com.siberteam.vtungusov.vocabulary.handler.Anagramer;
 import com.siberteam.vtungusov.vocabulary.handler.VocabularyMaker;
 import com.siberteam.vtungusov.vocabulary.model.Order;
 import com.siberteam.vtungusov.vocabulary.ui.UIManager;
@@ -8,7 +9,7 @@ import com.siberteam.vtungusov.vocabulary.ui.UIManager;
 import java.io.IOException;
 
 public class Main {
-    private static final String SUCCESSFULLY_FINISHED = "Program successfully finished\nYou can look vocabulary file" +
+    private static final String SUCCESSFULLY_FINISHED = "Program successfully finished" +
             "\n-----------------------------";
     private static final String FILE_READING_ERROR = "Something wrong, file reading error";
 
@@ -17,8 +18,10 @@ public class Main {
         try {
             uiManager.handleOptions(args);
             VocabularyMaker vocabularyMaker = new VocabularyMaker();
+            String outputFileName = uiManager.getOutputFileName();
             vocabularyMaker.collectVocabulary(new Order(uiManager.getInputFileName(),
-                    uiManager.getOutputFileName(), uiManager.getCollectorsCount()));
+                    outputFileName, uiManager.getCollectorsCount()));
+            new Anagramer().findAnagrams(outputFileName);
             System.out.println(SUCCESSFULLY_FINISHED);
         } catch (IOException e) {
             if (e.getMessage() != null) {

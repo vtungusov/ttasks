@@ -16,7 +16,7 @@ import static com.siberteam.vtungusov.vocabulary.broker.WordsBroker.THREAD_INTER
 
 public class WordsCollector {
     private static final String SAVED = "File was saved as";
-    private static final String WRITE_ERROR = "Error during file writing ";
+    public static final String WRITE_ERROR = "Error during file writing ";
 
     private final Logger logger = LoggerFactory.getLogger(WordsCollector.class);
 
