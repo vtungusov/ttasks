@@ -19,9 +19,13 @@ public class Main {
             uiManager.handleOptions(args);
             VocabularyMaker vocabularyMaker = new VocabularyMaker();
             String outputFileName = uiManager.getOutputFileName();
+            final long st1 = System.currentTimeMillis();
             vocabularyMaker.collectVocabulary(new Order(uiManager.getInputFileName(),
                     outputFileName, uiManager.getCollectorsCount()));
+            System.out.println("Collected in: " + (System.currentTimeMillis() - st1) + " milliseconds");
+            final long st = System.currentTimeMillis();
             new Anagramer().findAnagrams(outputFileName);
+            System.out.println("Finished in: " + (System.currentTimeMillis() - st) + " milliseconds");
             System.out.println(SUCCESSFULLY_FINISHED);
         } catch (IOException e) {
             if (e.getMessage() != null) {

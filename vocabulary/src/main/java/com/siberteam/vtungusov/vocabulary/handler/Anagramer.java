@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,26 +34,19 @@ public class Anagramer {
     public void findAnagrams(String outputFileName) throws IOException {
         startInformer();
         FileUtil.checkInputFile(outputFileName);
-        final Map<String, String> vocabulary = getVocabulary(outputFileName);
-        CompletableFuture.supplyAsync(() -> collectAnagrams(vocabulary))
-                .thenApply(anagramMap -> getAnagrams(vocabulary, anagramMap))
-                .thenAccept(anagrams -> saveToFile(outputFileName, anagrams))
-                .join();
+        final Map<String, List<String>> anagramMap = collectAnagrams(outputFileName);
+        final Stream<String> anagrams = getAnagrams(anagramMap);
+        saveToFile(outputFileName, anagrams);
     }
 
-    private Map<String, String> getVocabulary(String outputFileName) {
+    private Map<String, List<String>> collectAnagrams(String outputFileName) {
         try (final Stream<String> lines = Files.lines(Paths.get(outputFileName))) {
-            return lines
-                    .collect(Collectors.toMap(s -> s, this::getSortedWord, (s, s2) -> s));
+            Map<String, List<String>> anagramMap = new HashMap<>();
+            lines.forEach(word -> anagramMap.compute(getSortedWord(word), computeAnagramList(word)));
+            return anagramMap;
         } catch (IOException e) {
             throw new FileIOException(e.getMessage());
         }
-    }
-
-    private Map<String, List<String>> collectAnagrams(Map<String, String> vocabulary) {
-        Map<String, List<String>> anagrams = new HashMap<>();
-        vocabulary.forEach((word, sortedWord) -> anagrams.compute(sortedWord, computeAnagramList(word)));
-        return anagrams;
     }
 
     private BiFunction<String, List<String>, List<String>> computeAnagramList(String word) {
@@ -71,16 +63,15 @@ public class Anagramer {
         };
     }
 
-    private List<String> getAnagrams(Map<String, String> vocabulary, Map<String, List<String>> anagrams) {
-        return vocabulary.entrySet().stream()
-                .map(entry -> anagrams.entrySet().stream()
-                        .filter(anagramMap -> anagramMap.getKey().equals(entry.getValue()))
-                        .map(Map.Entry::getValue)
-                        .flatMap(Collection::stream)
-                        .filter(s -> !s.equals(entry.getKey()))
-                        .collect(Collectors.joining(ANAGRAM_DELIMITER, entry.getKey() + PREFIX_DELIMITER, SUFFIX))
-                )
-                .collect(Collectors.toList());
+    private Stream<String> getAnagrams(Map<String, List<String>> anagrams) {
+        return anagrams.values().stream()
+                .filter(list -> list.size() > 1)
+                .flatMap(list -> list.stream()
+                        .map(anagram ->
+                                list.stream()
+                                        .filter(s -> !s.equals(anagram))
+                                        .collect(Collectors.joining(ANAGRAM_DELIMITER, anagram + PREFIX_DELIMITER, SUFFIX)))
+                );
     }
 
     private String getSortedWord(String word) {
@@ -89,11 +80,11 @@ public class Anagramer {
         return new String(chars);
     }
 
-    private synchronized void saveToFile(String baseFileName, List<String> strings) {
+    private synchronized void saveToFile(String baseFileName, Stream<String> strings) {
         String outputFileName = addPostfix(baseFileName);
         try {
             FileUtil.checkOutputFile(outputFileName);
-            Files.write(Paths.get(outputFileName), (Iterable<String>) strings.stream()::iterator);
+            Files.write(Paths.get(outputFileName), (Iterable<String>) strings::iterator);
             System.out.println();
             log.info("{} {}", FILE_SAVED, outputFileName);
         } catch (IOException e) {

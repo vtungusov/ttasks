@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 public class UrlHandler {
     public static final String BAD_URL = "Malformed URL:";
     private static final int TARGET_WORD_LENGTH = 3;
-    private static final String STRING_SPLIT_REGEX = "[[^ЁёА-я]]";
+    private static final String STRING_SPLIT_REGEX = "[^ЁёА-я]";
 
     public void collectWords(URL url, WordsBroker broker) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
