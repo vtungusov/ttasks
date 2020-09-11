@@ -40,8 +40,10 @@ public class CalcAction extends Action {
                 result = sum(num1, num2);
                 break;
         }
-
-        form.setResult(String.format("%f %s %f = %f", num1, action, num2, result));
+        final String res = trimZero(result);
+        final String n1 = trimZero(num1);
+        final String n2 = trimZero(num2);
+        form.setResult(String.format("%s %s %s = %s", n1, action, n2, res));
     }
 
     private Double sum(double num1, double num2) {
@@ -61,5 +63,18 @@ public class CalcAction extends Action {
             throw new ArithmeticException(DIVISION_BY_ZERO);
         }
         return num1 / num2;
+    }
+
+    private String trimZero(Double num) {
+        String s = num.toString();
+        boolean trimmed = false;
+        while (!trimmed) {
+            if (s.charAt(s.length() - 1) == '0') {
+                s = s.substring(0, s.length() - 2);
+            } else {
+                trimmed = true;
+            }
+        }
+        return s;
     }
 }

@@ -23,19 +23,18 @@ public class CalcForm extends ActionForm {
         if (num1 == null || num2 == null || action == null) {
             errors.add("common.compute.err",
                     new ActionMessage("error.common.html.calculator.required"));
-        } else {
-            if (action.equals("/") && num2.equals(0d)) {
-                errors.add("common.compute.err",
-                        new ActionMessage("error.common.html.calculator.divisionByZero"));
-            }
+        }
+        if (action.equals("/") && num2.equals(0d)) {
+            errors.add("common.compute.err",
+                    new ActionMessage("error.common.html.calculator.divisionByZero"));
         }
         return errors;
     }
 
     @Override
     public void reset(ActionMapping mapping, HttpServletRequest request) {
-        num1 = .0d;
-        num2 = .0d;
+        num1 = 0d;
+        num2 = 0d;
         action = "+";
     }
 }
