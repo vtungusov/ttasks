@@ -33,7 +33,7 @@ public class VocabularyMaker {
     private static final String TIMED_OUT = "Timeout after " + TIMEOUT_VALUE + " " + TIMEOUT_UNIT + " at";
 
     private final Set<String> vocabulary = new ConcurrentSkipListSet<>();
-    private final Logger logger = LoggerFactory.getLogger(VocabularyMaker.class);
+    private final Logger log = LoggerFactory.getLogger(VocabularyMaker.class);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1
             , r -> {
                 Thread thread = new Thread(r);
@@ -84,7 +84,7 @@ public class VocabularyMaker {
                 .map(url -> CompletableFuture
                         .runAsync(() -> new UrlHandler().collectWords(url, broker))
                         .applyToEither(failAfter(), Function.identity())
-                        .thenAccept(result -> logger.info("{} {}", THREAD_SUCCESS, url)))
+                        .thenAccept(result -> log.info("{} {}", THREAD_SUCCESS, url)))
                 .toArray(CompletableFuture[]::new);
     }
 

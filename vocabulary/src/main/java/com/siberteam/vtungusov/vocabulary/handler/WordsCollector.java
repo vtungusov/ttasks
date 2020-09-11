@@ -18,7 +18,7 @@ public class WordsCollector {
     private static final String SAVED = "File was saved as";
     public static final String WRITE_ERROR = "Error during file writing ";
 
-    private final Logger logger = LoggerFactory.getLogger(WordsCollector.class);
+    private final Logger log = LoggerFactory.getLogger(WordsCollector.class);
 
     public void collectWords(WordsBroker broker, Set<String> vocabulary, String outputFileName) {
         broker.registerCollector();
@@ -44,7 +44,7 @@ public class WordsCollector {
         if (broker.trySave() && !broker.isFileSaved()) {
             try {
                 Files.write(Paths.get(fileName), (Iterable<String>) stringStream::iterator);
-                logger.info("{} {}", SAVED, fileName);
+                log.info("{} {}", SAVED, fileName);
                 broker.setFileSaved();
             } catch (IOException e) {
                 throw new FileIOException(WRITE_ERROR + fileName);
