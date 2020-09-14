@@ -7,24 +7,26 @@
 </head>
 <body>
 <div style="display:inline-block; margin:20% 40% 10% 40%;">
-    <html:form action="/Compute" method="post" focus="num1">
+    <form action="./Compute.do" method="post">
         <html:messages id="err_name" property="common.compute.err">
             <div style="color:red">
                 <bean:write name="err_name"/>
             </div>
         </html:messages>
-        <html:text style="width: 80px" property="num1" value=""/>
 
-        <html:select property="action">
-            <html:option value="+">+</html:option>
-            <html:option value="-">-</html:option>
-            <html:option value="/">/</html:option>
-            <html:option value="*">*</html:option>
-        </html:select>
+        <input autofocus style="width: 80px" name="operand1" value="" type="text" pattern="[+-]?([0-9]*[.])?[0-9]+"
+               required/>
 
-        <html:text style="width: 80px" property="num2" value=""/>
-        <html:submit value="submit"/>
-    </html:form>
+        <select name="action" required>
+            <option selected value="+">+</option>
+            <option value="-">-</option>
+            <option value="*">*</option>
+            <option value="/">/</option>
+        </select>
+
+        <input style="width: 80px" name="operand2" value="" type="text" pattern="[+-]?([0-9]*[.])?[0-9]+" required/>
+        <input type="submit" value="compute"/>
+    </form>
     <logic:present name="calcForm" property="result">
         <bean:write name="calcForm" property="result"/>
     </logic:present>

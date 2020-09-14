@@ -1,6 +1,7 @@
 package com.siberteam.vtungusov.calc.action;
 
 import com.siberteam.vtungusov.calc.form.CalcForm;
+import com.siberteam.vtungusov.calc.form.OperationType;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -8,10 +9,13 @@ import org.apache.struts.action.ActionMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class CalcAction extends Action {
 
-    public static final String DIVISION_BY_ZERO = "Division by zero";
+    private static final String DIVISION_BY_ZERO = "Division by zero";
+    private static final char REDUNDANT_SUFFIX = '0';
 
     @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -22,59 +26,70 @@ public class CalcAction extends Action {
     }
 
     private void calculate(CalcForm form) {
-        final double num1 = form.getNum1();
-        final double num2 = form.getNum2();
-        final String action = form.getAction();
+        final double operand1 = form.getOperand1();
+        final double operand2 = form.getOperand2();
+        final OperationType action = form.getAction();
         Double result;
         switch (action) {
-            case "-":
-                result = subtract(num1, num2);
+            case SUBTRACTION:
+                result = subtract(operand1, operand2);
                 break;
-            case "*":
-                result = multiply(num1, num2);
+            case MULTIPLICATION:
+                result = multiply(operand1, operand2);
                 break;
-            case "/":
-                result = divide(num1, num2);
+            case DIVISION:
+                result = divide(operand1, operand2);
                 break;
             default:
-                result = sum(num1, num2);
+                result = sum(operand1, operand2);
                 break;
         }
         final String res = trimZero(result);
-        final String n1 = trimZero(num1);
-        final String n2 = trimZero(num2);
-        form.setResult(String.format("%s %s %s = %s", n1, action, n2, res));
+        final String n1 = trimZero(operand1);
+        final String n2 = trimZero(operand2);
+        form.setResult(String.format("%s %s %s = %s", n1, action.getValue(), n2, res));
     }
 
     private Double sum(double num1, double num2) {
-        return num1 + num2;
+        return BigDecimal.valueOf(num1)
+                .add(BigDecimal.valueOf(num2))
+                .doubleValue();
     }
 
     private Double subtract(double num1, double num2) {
-        return num1 - num2;
+        return BigDecimal.valueOf(num1)
+                .subtract(BigDecimal.valueOf(num2))
+                .doubleValue();
     }
 
     private Double multiply(double num1, double num2) {
-        return num1 * num2;
+        return BigDecimal.valueOf(num1)
+                .multiply(BigDecimal.valueOf(num2))
+                .doubleValue();
     }
 
     private Double divide(double num1, double num2) {
         if (num2 == 0) {
             throw new ArithmeticException(DIVISION_BY_ZERO);
         }
-        return num1 / num2;
+        return BigDecimal.valueOf(num1)
+                .divide(BigDecimal.valueOf(num2), RoundingMode.HALF_EVEN)
+                .doubleValue();
     }
 
     private String trimZero(Double num) {
         String s = num.toString();
         boolean trimmed = false;
+        int lastIndex = s.length() - 1;
+        int tail = -1;
         while (!trimmed) {
-            if (s.charAt(s.length() - 1) == '0') {
-                s = s.substring(0, s.length() - 2);
+            if (s.charAt(lastIndex) == REDUNDANT_SUFFIX) {
+                tail++;
+                lastIndex--;
             } else {
                 trimmed = true;
             }
         }
-        return s;
+        return s.substring(0, lastIndex - tail);
     }
 }

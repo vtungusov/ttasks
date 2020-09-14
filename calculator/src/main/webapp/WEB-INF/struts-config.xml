@@ -6,7 +6,9 @@
     <form-beans>
         <form-bean
                 name="calcForm"
-                type="com.siberteam.vtungusov.calc.form.CalcForm"/>
+                type="com.siberteam.vtungusov.calc.form.CalcForm">
+            <form-property name="action" type="com.siberteam.vtungusov.calc.form.OperationType"/>
+        </form-bean>
     </form-beans>
 
     <action-mappings>
@@ -23,7 +25,6 @@
                 input="/jsp/main.jsp">
 
             <forward name="success" path="/jsp/main.jsp"/>
-            <forward name="failure" path="/jsp/main.jsp"/>
         </action>
     </action-mappings>
 
