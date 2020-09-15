@@ -12,25 +12,23 @@ import javax.servlet.http.HttpServletRequest;
 @Getter
 @Setter
 public class CalcForm extends ActionForm {
+    public static final String COMMON_ERR = "common.compute.err";
+
     private Double operand1;
     private Double operand2;
-    private OperationType action;
+    private String action;
     private String result;
-
-    public void setAction(String string) {
-        this.action = OperationType.valueOf(string);
-    }
 
     @Override
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
 
         if (operand1 == null || operand2 == null || action == null) {
-            errors.add("common.compute.err",
+            errors.add(COMMON_ERR,
                     new ActionMessage("error.common.html.calculator.required"));
         }
-        if (action.equals(OperationType.DIVISION) && operand2.equals(0d)) {
-            errors.add("common.compute.err",
+        if (("DIVISION").equals(action) && Double.valueOf(0d).equals(operand2)) {
+            errors.add(COMMON_ERR,
                     new ActionMessage("error.common.html.calculator.divisionByZero"));
         }
         return errors;
@@ -40,6 +38,6 @@ public class CalcForm extends ActionForm {
     public void reset(ActionMapping mapping, HttpServletRequest request) {
         operand1 = 0d;
         operand2 = 0d;
-        action = OperationType.ADDITION;
+        action = "ADDITION";
     }
 }

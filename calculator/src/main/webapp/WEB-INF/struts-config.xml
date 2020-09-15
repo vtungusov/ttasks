@@ -7,7 +7,6 @@
         <form-bean
                 name="calcForm"
                 type="com.siberteam.vtungusov.calc.form.CalcForm">
-            <form-property name="action" type="com.siberteam.vtungusov.calc.form.OperationType"/>
         </form-bean>
     </form-beans>
 

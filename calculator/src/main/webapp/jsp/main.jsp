@@ -14,17 +14,16 @@
             </div>
         </html:messages>
 
-        <input autofocus style="width: 80px" name="operand1" value="" type="text" pattern="[+-]?([0-9]*[.])?[0-9]+"
-               required/>
+        <input style="width: 80px" name="operand1" value="" type="number" step="any" required autofocus/>
 
         <select name="action" required>
-            <option selected value="+">+</option>
-            <option value="-">-</option>
-            <option value="*">*</option>
-            <option value="/">/</option>
+            <option value="ADDITION">+</option>
+            <option value="SUBTRACTION">-</option>
+            <option value="MULTIPLICATION">*</option>
+            <option value="DIVISION">/</option>
         </select>
 
-        <input style="width: 80px" name="operand2" value="" type="text" pattern="[+-]?([0-9]*[.])?[0-9]+" required/>
+        <input style="width: 80px" name="operand2" value="" type="number" step="any" required/>
         <input type="submit" value="compute"/>
     </form>
     <logic:present name="calcForm" property="result">
