@@ -1,0 +1,46 @@
+<!DOCTYPE form-validation PUBLIC
+        "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.3.0//EN"
+        "http://jakarta.apache.org/commons/dtds/validator_1_3_0.dtd">
+
+<form-validation>
+    <global>
+        <constant>
+            <constant-name>maxNumberLength</constant-name>
+            <constant-value>15</constant-value>
+        </constant>
+    </global>
+
+    <formset>
+        <form name="calcForm">
+            <field property="operand1" depends="required,double,maxlength">
+                <msg name="required" key="error.calculator.operand.required1"/>
+                <msg name="maxlength" key="error.calculator.operand.length"/>
+                <msg name="double" key="error.calculator.operand.unsupported"/>
+
+                <arg name="maxlength" key="${var:maxlength}" position="0" resource="false"/>
+
+                <var>
+                    <var-name>maxlength</var-name>
+                    <var-value>${maxNumberLength}</var-value>
+                </var>
+            </field>
+
+            <field property="operand2" depends="required,double,maxlength">
+                <msg name="required" key="error.calculator.operand.required2"/>
+                <msg name="maxlength" key="error.calculator.operand.length"/>
+                <msg name="double" key="error.calculator.operand.unsupported"/>
+
+                <arg name="maxlength" key="${var:maxlength}" position="0" resource="false"/>
+
+                <var>
+                    <var-name>maxlength</var-name>
+                    <var-value>${maxNumberLength}</var-value>
+                </var>
+            </field>
+
+            <field property="action" depends="required">
+                <msg name="required" key="error.calculator.operation.required"/>
+            </field>
+        </form>
+    </formset>
+</form-validation>

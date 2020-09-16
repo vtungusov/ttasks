@@ -22,8 +22,8 @@ public class CalcAction extends Action {
     }
 
     public void calculate(CalcForm form) {
-        final BigDecimal operand1 = BigDecimal.valueOf(form.getOperand1());
-        final BigDecimal operand2 = BigDecimal.valueOf(form.getOperand2());
+        final BigDecimal operand1 = BigDecimal.valueOf(Double.parseDouble(form.getOperand1()));
+        final BigDecimal operand2 = BigDecimal.valueOf(Double.parseDouble(form.getOperand2()));
         final Operation operation = Operation.valueOf(form.getAction());
         double result = operation.compute(operand1, operand2).doubleValue();
         form.setResult(String.format("%s %s %s = %s", operand1, operation.getValue(), operand2, result));
