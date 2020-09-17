@@ -6,8 +6,7 @@
     <form-beans>
         <form-bean
                 name="calcForm"
-                type="com.siberteam.vtungusov.calc.form.CalcForm">
-        </form-bean>
+                type="com.siberteam.vtungusov.calc.form.CalcForm"/>
     </form-beans>
 
     <global-exceptions>

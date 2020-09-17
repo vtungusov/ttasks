@@ -15,7 +15,6 @@ public class CalcForm extends ValidatorForm {
     private String operand2;
     private String action;
     private String result;
-    private final List<String> operations = Arrays.stream(Operation.values())
-            .map(Enum::toString)
+    private final List<Operation> operations = Arrays.stream(Operation.values())
             .collect(Collectors.toList());
 }

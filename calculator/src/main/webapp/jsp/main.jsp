@@ -10,7 +10,7 @@
     <div style="color:red">
         <html:errors/>
     </div>
-    <form action="./Compute.do" method="post">
+    <html:form action="/Compute.do" method="post">
         <html:messages id="err_name" property="common.compute.err">
             <div style="color:red">
                 <bean:write name="err_name"/>
@@ -19,17 +19,14 @@
 
         <input style="width: 80px" name="operand1" value="" type="number" step="any" required autofocus/>
 
-        <select name="action" required>
-            <option value="">Operation</option>
-            <option value="ADDITION">+</option>
-            <option value="SUBTRACTION">-</option>
-            <option value="MULTIPLICATION">*</option>
-            <option value="DIVISION">/</option>
-        </select>
+        <html:select property="action">
+            <html:option value="">Select Operation</html:option>
+            <html:optionsCollection name="calcForm" property="operations" label="value" value="name"/>
+        </html:select>
 
         <input style="width: 80px" name="operand2" value="" type="number" step="any" required/>
         <input type="submit" value="compute"/>
-    </form>
+    </html:form>
     <logic:present name="calcForm" property="result">
         <bean:write name="calcForm" property="result"/>
     </logic:present>
